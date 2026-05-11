@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>LUXE · פאנל ניהול</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#08080a;--bg2:#0d0d10;
+  --surface:#111115;--surface2:#18181d;--surface3:#1e1e24;
+  --border:#ffffff0d;--border2:#ffffff18;
+  --gold:#c9a84c;--gold2:#f0cc76;--gold-soft:#c9a84c18;
+  --text:#f2f2f5;--muted:#71717a;--muted2:#52525b;
+  --green:#22c55e;--red:#ef4444;--blue:#60a5fa;--orange:#f97316;--purple:#a78bfa;
+  --sidebar:248px;--radius:14px;
+  --shadow:0 8px 32px #00000066;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html,body{height:100%}
+body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+button,input,select,textarea{font-family:'Heebo',sans-serif;outline:none;border:none}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+/* ══ LOGIN ══ */
+#loginScreen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;background:var(--bg);
+  background-image:radial-gradient(ellipse 70% 60% at 50% -5%,#c9a84c1a 0%,transparent 70%);
+}
+.login-card{
+  width:360px;padding:44px 36px;border-radius:24px;
+  background:var(--surface);border:1px solid var(--border2);
+  box-shadow:var(--shadow);
+}
+.login-logo{font-family:'Playfair Display',serif;font-size:40px;color:var(--gold);text-align:center;letter-spacing:6px;margin-bottom:2px}
+.login-sub{text-align:center;color:var(--muted);font-size:11px;letter-spacing:3px;margin-bottom:36px}
+.login-card label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;margin-top:16px;letter-spacing:.5px}
+.login-card input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:14px;transition:.2s}
+.login-card input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+.login-err{font-size:12px;color:var(--red);margin-top:10px;text-align:center;min-height:18px}
+.btn-login{width:100%;margin-top:22px;padding:14px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#111;font-weight:800;font-size:15px;transition:.2s;letter-spacing:.5px}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 28px #c9a84c44}
+.btn-login:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+/* ══ SHELL ══ */
+#shell{display:none;min-height:100vh}
+@media(min-width:861px){#shell{display:none;grid-template-columns:var(--sidebar) 1fr}}
+#shell.visible{display:grid}
+@media(max-width:860px){#shell.visible{display:flex;flex-direction:column}}
+
+/* ══ SIDEBAR ══ */
+.sidebar{width:var(--sidebar);background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;right:0;bottom:0;z-index:200;overflow-y:auto}
+.sb-brand{padding:28px 20px 20px;border-bottom:1px solid var(--border)}
+.sb-brand h1{font-family:'Playfair Display',serif;font-size:22px;color:var(--gold);letter-spacing:4px}
+.sb-brand p{font-size:10px;color:var(--muted);letter-spacing:3px;margin-top:2px}
+.sb-nav{flex:1;padding:14px 10px;display:flex;flex-direction:column;gap:2px}
+.sb-btn{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:10px;background:transparent;color:var(--muted);font-size:14px;font-weight:500;width:100%;text-align:right;transition:.15s;position:relative}
+.sb-btn .ico{font-size:17px;width:20px;text-align:center;flex-shrink:0}
+.sb-btn:hover{background:var(--surface2);color:var(--text)}
+.sb-btn.active{background:var(--gold-soft);color:var(--gold);font-weight:700}
+.sb-badge{margin-right:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center}
+.sb-footer{padding:14px 16px;border-top:1px solid var(--border)}
+.sb-user{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px;background:var(--surface2);border-radius:10px}
+.sb-avatar{width:34px;height:34px;border-radius:50%;background:var(--gold-soft);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--gold);flex-shrink:0}
+.sb-user-info{flex:1;overflow:hidden}
+.sb-user-info strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-user-info span{font-size:11px;color:var(--muted)}
+.btn-logout{width:100%;padding:9px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:13px;transition:.2s}
+.btn-logout:hover{border-color:var(--red);color:var(--red);background:#ef444410}
+.btn-app-link{width:100%;padding:9px;border-radius:8px;border:1px solid var(--gold);background:var(--gold-soft);color:var(--gold);font-size:13px;font-weight:600;transition:.2s;margin-bottom:8px;display:flex;align-items:center;gap:6px;justify-content:center}
+.btn-app-link:hover{background:#c9a84c30}
+
+@media(max-width:860px){
+  .sidebar{position:relative;width:100%;height:auto;flex-direction:row;flex-wrap:wrap;border-left:none;border-bottom:1px solid var(--border)}
+  .sb-brand{padding:14px 16px;border-bottom:none;border-left:1px solid var(--border)}
+  .sb-nav{flex-direction:row;flex-wrap:wrap;padding:8px;gap:4px;flex:1}
+  .sb-btn{padding:7px 11px;font-size:12px}
+  .sb-footer{display:none}
+}
+
+/* ══ MAIN ══ */
+.main{margin-right:var(--sidebar);padding:28px 32px;min-height:100vh;max-width:1300px}
+@media(max-width:860px){.main{margin-right:0;padding:16px}}
+.page{display:none}
+.page.active{display:block;animation:fadeUp .25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700}
+.page-title span{color:var(--muted);font-size:14px;font-weight:400;font-family:'Heebo',sans-serif;margin-right:8px}
+
+/* ══ KPI ══ */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:14px;margin-bottom:24px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:.2s;cursor:default}
+.kpi:hover{border-color:var(--gold);transform:translateY(-2px)}
+.kpi-lbl{font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:.5px;text-transform:uppercase}
+.kpi-val{font-family:'Playfair Display',serif;font-size:34px;font-weight:700;color:var(--gold)}
+.kpi-sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ══ CARDS ══ */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.card-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+
+/* ══ BUTTONS ══ */
+.btn{padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;transition:.15s;display:inline-flex;align-items:center;gap:7px}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#111;border:none}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 4px 16px #c9a84c44}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--text);color:var(--text)}
+.btn-green{background:#22c55e18;color:var(--green);border:1px solid #22c55e33}
+.btn-green:hover{background:#22c55e28}
+.btn-red{background:#ef444418;color:var(--red);border:1px solid #ef444433}
+.btn-red:hover{background:#ef444428}
+.btn-blue{background:#3b82f618;color:var(--blue);border:1px solid #3b82f633}
+.btn-blue:hover{background:#3b82f628}
+.btn-orange{background:#f9731618;color:var(--orange);border:1px solid #f9731633}
+.btn-orange:hover{background:#f9731628}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:7px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+/* ══ CHIPS ══ */
+.chips{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.chip{padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:13px;font-family:'Heebo',sans-serif;transition:.15s}
+.chip:hover{border-color:var(--text);color:var(--text)}
+.chip.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold)}
+
+/* ══ BADGES ══ */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-pending{background:#f9731620;color:var(--orange)}
+.badge-approved{background:#22c55e20;color:var(--green)}
+.badge-rejected{background:#ef444420;color:var(--red)}
+.badge-completed{background:#60a5fa20;color:var(--blue)}
+
+/* ══ APPOINTMENTS LIST ══ */
+.appt-list{display:flex;flex-direction:column;gap:10px}
+.appt-row{display:flex;align-items:center;gap:14px;padding:15px 18px;border-radius:var(--radius);background:var(--surface2);border:1px solid var(--border);transition:.15s;flex-wrap:wrap}
+.appt-row:hover{border-color:var(--border2)}
+.appt-avatar{width:42px;height:42px;border-radius:50%;background:var(--gold-soft);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:var(--gold);flex-shrink:0}
+.appt-info{flex:1;min-width:140px}
+.appt-info h4{font-size:14px;font-weight:700;margin-bottom:3px}
+.appt-info p{font-size:12px;color:var(--muted);line-height:1.6}
+.appt-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.appt-actions{display:flex;gap:7px;flex-wrap:wrap}
+.appt-date{font-size:13px;font-weight:600;color:var(--text)}
+.appt-time{font-size:12px;color:var(--gold)}
+
+/* ══ CALENDAR ══ */
+.cal-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.cal-nav{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:6px 12px;color:var(--text);font-size:16px;transition:.15s}
+.cal-nav:hover{border-color:var(--gold);color:var(--gold)}
+.cal-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;min-width:160px;text-align:center}
+.cal-views{display:flex;gap:3px;margin-right:auto}
+.cal-vbtn{padding:6px 13px;border-radius:7px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:12px;font-family:'Heebo',sans-serif;transition:.15s}
+.cal-vbtn:hover{border-color:var(--text);color:var(--text)}
+.cal-vbtn.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);font-weight:700}
+.cal-month{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden}
+.cal-head-cell{background:var(--surface);padding:9px 4px;text-align:center;font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px}
+.cal-cell{background:var(--surface2);min-height:90px;padding:8px;cursor:pointer;transition:.15s;position:relative}
+.cal-cell:hover{background:var(--surface3);z-index:1}
+.cal-cell.today .day-n{background:var(--gold);color:#111;border-radius:50%}
+.cal-cell.other{opacity:.3}
+.day-n{width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-bottom:4px}
+.cal-dot{padding:2px 5px;border-radius:4px;font-size:10px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-right:2px solid}
+.cal-dot.approved{background:#22c55e18;border-color:var(--green);color:var(--green)}
+.cal-dot.pending{background:#f9731618;border-color:var(--orange);color:var(--orange)}
+.cal-dot.rejected{background:#ef444418;border-color:var(--red);color:var(--red)}
+.cal-more{font-size:10px;color:var(--muted);margin-top:2px}
+.cal-week{border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.week-header{display:grid;grid-template-columns:56px repeat(7,1fr);background:var(--surface)}
+.week-head-cell{padding:10px 4px;text-align:center;font-size:11px;font-weight:700;color:var(--muted);border-left:1px solid var(--border)}
+.week-head-cell .week-date{font-size:18px;font-weight:800;color:var(--text);display:block}
+.week-head-cell.today-col .week-date{color:var(--gold)}
+.week-body{overflow-y:auto;max-height:560px}
+.week-row{display:grid;grid-template-columns:56px repeat(7,1fr);border-top:1px solid var(--border)}
+.week-time{padding:6px 4px;text-align:center;font-size:10px;color:var(--muted);background:var(--surface);border-left:1px solid var(--border);display:flex;align-items:flex-start;justify-content:center;min-height:48px}
+.week-slot{padding:3px;border-left:1px solid var(--border);background:var(--surface2);min-height:48px;position:relative;transition:.15s}
+.week-slot:hover{background:var(--surface3)}
+.week-event{background:var(--gold-soft);border-right:3px solid var(--gold);border-radius:5px;padding:3px 5px;font-size:10px;color:var(--gold);cursor:pointer;margin-bottom:2px;line-height:1.3}
+.week-event.approved{background:#22c55e18;border-color:var(--green);color:var(--green)}
+.week-event.pending{background:#f9731618;border-color:var(--orange);color:var(--orange)}
+.week-event.rejected{background:#ef444418;border-color:var(--red);color:var(--red)}
+.cal-day-view{border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.day-view-header{background:var(--surface);padding:16px 20px;border-bottom:1px solid var(--border);font-family:'Playfair Display',serif;font-size:20px}
+.day-slot-row{display:flex;border-top:1px solid var(--border);min-height:52px}
+.day-time{width:60px;padding:8px;font-size:11px;color:var(--muted);background:var(--surface);border-left:1px solid var(--border);flex-shrink:0;display:flex;align-items:flex-start}
+.day-events{flex:1;padding:4px 8px;background:var(--surface2);display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.day-event{background:var(--gold-soft);border-right:3px solid var(--gold);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--gold);cursor:pointer}
+.day-event.approved{background:#22c55e18;border-color:var(--green);color:var(--green)}
+.day-event.pending{background:#f9731618;border-color:var(--orange);color:var(--orange)}
+
+/* ══ LIST CARDS ══ */
+.item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.item-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:12px;transition:.15s}
+.item-card:hover{border-color:var(--border2)}
+.item-card-top{display:flex;gap:12px;align-items:flex-start}
+.item-img{width:54px;height:54px;border-radius:10px;background:var(--surface);background-size:cover;background-position:center;flex-shrink:0;font-size:24px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.item-img img{width:100%;height:100%;object-fit:cover}
+.item-info h4{font-size:15px;font-weight:700;margin-bottom:4px}
+.item-info p{font-size:12px;color:var(--muted);line-height:1.5}
+.item-price{font-size:14px;font-weight:700;color:var(--gold);margin-top:2px}
+.item-actions{display:flex;gap:7px}
+
+/* Gallery */
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.gallery-item{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:var(--surface2)}
+.gallery-item img{width:100%;height:100%;object-fit:cover;display:block}
+.gallery-del{position:absolute;top:6px;left:6px;background:#000a;border:none;border-radius:6px;padding:5px 8px;color:var(--red);font-size:12px;cursor:pointer;opacity:0;transition:.2s}
+.gallery-item:hover .gallery-del{opacity:1}
+
+/* ══ USERS TABLE (Firebase-style) ══ */
+.users-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.user-card{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;display:flex;flex-direction:column;gap:14px;transition:.15s;
+}
+.user-card:hover{border-color:var(--border2)}
+.user-card-top{display:flex;align-items:center;gap:12px}
+.user-photo{
+  width:48px;height:48px;border-radius:50%;
+  background:var(--gold-soft);border:2px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:19px;color:var(--gold);flex-shrink:0;
+  overflow:hidden;
+}
+.user-photo img{width:100%;height:100%;object-fit:cover}
+.user-main{flex:1;min-width:0}
+.user-main strong{display:block;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-main span{font-size:12px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-details{display:flex;flex-direction:column;gap:5px}
+.user-detail-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.user-detail-row .ico{width:16px;text-align:center;flex-shrink:0}
+.user-detail-row .val{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-actions{display:flex;gap:7px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--border)}
+.user-badge{display:inline-flex;align-items:center;gap:4px;background:var(--gold-soft);color:var(--gold);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}
+.user-badge.admin-badge{background:#a78bfa20;color:var(--purple)}
+.user-uid{font-size:10px;color:var(--muted2);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:4px}
+
+/* Users search bar */
+.users-toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.users-search{
+  flex:1;min-width:200px;padding:10px 14px;border-radius:10px;
+  border:1px solid var(--border2);background:var(--surface2);
+  color:var(--text);font-size:14px;transition:.2s;
+}
+.users-search:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+
+/* ══ TABLE (fallback) ══ */
+.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface);padding:12px 16px;text-align:right;font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+
+/* ══ FORM FIELDS ══ */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600}
+.field input,.field select,.field textarea{width:100%;padding:11px 13px;border-radius:9px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:14px;transition:.2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+.field textarea{resize:vertical;min-height:80px}
+.field select option{background:var(--surface)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.form-row{grid-template-columns:1fr}}
+
+/* ══ MODAL ══ */
+.modal-bg{position:fixed;inset:0;background:#000a;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:.2s}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;transform:translateY(20px);transition:.2s;box-shadow:var(--shadow)}
+.modal-bg.open .modal-box{transform:translateY(0)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700}
+.modal-close{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--muted);font-size:16px;transition:.2s}
+.modal-close:hover{border-color:var(--red);color:var(--red)}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* Appointment detail modal */
+.appt-detail-header{display:flex;gap:14px;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.appt-detail-avatar{width:52px;height:52px;border-radius:50%;background:var(--gold-soft);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--gold)}
+.appt-detail-info h3{font-size:17px;font-weight:700;margin-bottom:4px}
+.detail-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px}
+.detail-row:last-child{border-bottom:none}
+.detail-icon{font-size:18px;width:26px;text-align:center;flex-shrink:0}
+.detail-val{flex:1}
+.detail-label{font-size:11px;color:var(--muted);margin-bottom:2px}
+
+/* ══ SETTINGS ══ */
+.settings-section{margin-bottom:28px}
+.settings-section h3{font-size:15px;font-weight:700;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+
+/* ══ UPLOAD ══ */
+.upload-zone{border:2px dashed var(--border2);border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:16px}
+.upload-zone:hover{border-color:var(--gold);background:var(--gold-soft)}
+.upload-zone p{color:var(--muted);font-size:14px;margin-top:6px}
+
+/* ══ TOAST ══ */
+#toast{position:fixed;bottom:24px;right:50%;transform:translateX(50%);padding:12px 22px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999;pointer-events:none;opacity:0;transition:.3s;box-shadow:0 8px 32px #0008;white-space:nowrap}
+#toast.show{opacity:1}
+#toast.success{background:#22c55e;color:#fff}
+#toast.error{background:#ef4444;color:#fff}
+#toast.info{background:var(--surface2);color:var(--text);border:1px solid var(--border2)}
+
+/* ══ EMPTY ══ */
+.empty{padding:48px;text-align:center;color:var(--muted)}
+.empty-ico{font-size:48px;margin-bottom:12px}
+.empty p{font-size:14px}
+.loader{display:flex;align-items:center;justify-content:padding:48px;color:var(--muted)}
+
+@media(max-width:860px){.sb-btn .ico-label{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">LUXE</div>
+    <div class="login-sub">ADMIN PANEL · פאנל ניהול</div>
+    <label>אימייל מנהל</label>
+    <input type="email" id="loginEmail" placeholder="admin@luxe.com" autocomplete="email"/>
+    <label>סיסמה</label>
+    <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"/>
+    <div class="login-err" id="loginErr"></div>
+    <button class="btn-login" id="loginBtn">התחבר</button>
+  </div>
+</div>
+
+<!-- ══ SHELL ══ -->
+<div id="shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <h1>LUXE</h1>
+      <p>ADMIN PANEL</p>
+    </div>
+    <nav class="sb-nav">
+      <button class="sb-btn active" data-page="dashboard"><span class="ico">📊</span><span class="ico-label">דשבורד</span></button>
+      <button class="sb-btn" data-page="appointments"><span class="ico">📅</span><span class="ico-label">הזמנות</span><span class="sb-badge" id="pendingBadge" style="display:none">0</span></button>
+      <button class="sb-btn" data-page="calendar"><span class="ico">🗓</span><span class="ico-label">יומן</span></button>
+      <button class="sb-btn" data-page="barbers"><span class="ico">✂️</span><span class="ico-label">ספרים</span></button>
+      <button class="sb-btn" data-page="services"><span class="ico">💈</span><span class="ico-label">שירותים</span></button>
+      <button class="sb-btn" data-page="gallery"><span class="ico">🖼️</span><span class="ico-label">גלריה</span></button>
+      <button class="sb-btn" data-page="users"><span class="ico">👥</span><span class="ico-label">לקוחות</span></button>
+      <button class="sb-btn" data-page="settings"><span class="ico">⚙️</span><span class="ico-label">הגדרות</span></button>
+    </nav>  
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar" id="adminAvatar">A</div>
+        <div class="sb-user-info">
+          <strong id="adminName">מנהל</strong>
+          <span id="adminEmail">admin@luxe.com</span>
+        </div>
+      </div>
+      <!-- קישור חזרה לאפליקציה -->
+      <button class="btn-app-link" onclick="window.open('../index.html','_blank')">🏠 חזור לאפליקציה</button>
+      <button class="btn-logout" id="logoutBtn">🚪 התנתק</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-head">
+        <h1 class="page-title">דשבורד <span id="todayDate"></span></h1>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-lbl">הזמנות ממתינות</div><div class="kpi-val" id="kpi-pending">—</div><div class="kpi-sub">לאישור</div></div>
+        <div class="kpi"><div class="kpi-lbl">אושרו היום</div><div class="kpi-val" id="kpi-today">—</div><div class="kpi-sub">תורים</div></div>
+        <div class="kpi"><div class="kpi-lbl">סה"כ הזמנות</div><div class="kpi-val" id="kpi-total">—</div><div class="kpi-sub">כל הזמנים</div></div>
+        <div class="kpi"><div class="kpi-lbl">לקוחות רשומים</div><div class="kpi-val" id="kpi-users">—</div><div class="kpi-sub">משתמשים</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">⏳ ממתינות לאישור</div><button class="btn btn-ghost btn-sm" data-page="appointments">הכל →</button></div>
+        <div class="appt-list" id="dashPending"></div>
+      </div>
+    </div>
+
+    <!-- ── APPOINTMENTS ── -->
+    <div class="page" id="page-appointments">
+      <div class="page-head">
+        <h1 class="page-title">הזמנות</h1>
+      </div>
+      <div class="chips" id="apptChips">
+        <button class="chip active" data-filter="all">הכל</button>
+        <button class="chip" data-filter="pending">ממתין</button>
+        <button class="chip" data-filter="approved">מאושר</button>
+        <button class="chip" data-filter="rejected">נדחה</button>
+        <button class="chip" data-filter="completed">הושלם</button>
+      </div>
+      <div class="appt-list" id="apptList"><div style="padding:20px;color:var(--muted);text-align:center">טוען הזמנות...</div></div>
+    </div>
+
+    <!-- ── CALENDAR ── -->
+    <div class="page" id="page-calendar">
+      <div class="page-head"><h1 class="page-title">יומן</h1></div>
+      <div class="card">
+        <div class="cal-toolbar">
+          <button class="cal-nav" id="calPrev">‹</button>
+          <div class="cal-title" id="calTitle">–</div>
+          <button class="cal-nav" id="calNext">›</button>
+          <div class="cal-views">
+            <button class="cal-vbtn active" data-view="month">חודש</button>
+            <button class="cal-vbtn" data-view="week">שבוע</button>
+            <button class="cal-vbtn" data-view="day">יום</button>
+          </div>
+        </div>
+        <div id="calBody"></div>
+      </div>
+    </div>
+
+    <!-- ── BARBERS ── -->
+    <div class="page" id="page-barbers">
+      <div class="page-head">
+        <h1 class="page-title">ספרים</h1>
+        <button class="btn btn-gold" id="newBarberBtn">+ ספר חדש</button>
+      </div>
+      <div class="item-grid" id="barbersList"></div>
+    </div>
+
+    <!-- ── SERVICES ── -->
+    <div class="page" id="page-services">
+      <div class="page-head">
+        <h1 class="page-title">שירותים</h1>
+        <button class="btn btn-gold" id="newServiceBtn">+ שירות חדש</button>
+      </div>
+      <div class="item-grid" id="servicesList"></div>
+    </div>
+
+    <!-- ── GALLERY ── -->
+    <div class="page" id="page-gallery">
+      <div class="page-head">
+        <h1 class="page-title">גלריה</h1>
+        <label class="btn btn-gold" style="cursor:pointer">
+          + העלה תמונות
+          <input type="file" id="galleryUpload" accept="image/*" multiple style="display:none"/>
+        </label>
+      </div>
+      <div class="upload-zone" onclick="document.getElementById('galleryUpload').click()">
+        <div style="font-size:32px">🖼️</div>
+        <p>לחץ להעלאת תמונות או גרור לכאן</p>
+      </div>
+      <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+
+    <!-- ── USERS ── -->
+    <div class="page" id="page-users">
+      <div class="page-head">
+        <h1 class="page-title">לקוחות <span id="usersCount"></span></h1>
+      </div>
+      <!-- Toolbar with search -->
+      <div class="users-toolbar">
+        <input class="users-search" id="usersSearch" placeholder="🔍 חיפוש לפי שם, אימייל או טלפון..." type="text"/>
+        <button class="btn btn-ghost btn-sm" onclick="loadUsers()">🔄 רענן</button>
+      </div>
+      <!-- Cards grid like Firebase Console -->
+      <div class="users-grid" id="usersGrid">
+        <div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--muted)">טוען לקוחות...</div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="page" id="page-settings">
+      <div class="page-head">
+        <h1 class="page-title">הגדרות</h1>
+        <button class="btn btn-gold" id="saveSettingsBtn">שמור שינויים</button>
+      </div>
+      <div class="card">
+        <div class="settings-section">
+          <h3>📋 פרטי המספרה</h3>
+          <div class="form-row">
+            <div class="field"><label>שם המספרה</label><input id="s-name" placeholder="LUXE Barber"/></div>
+            <div class="field"><label>טלפון</label><input id="s-phone" placeholder="03-1234567"/></div>
+          </div>
+          <div class="field"><label>כתובת</label><input id="s-address" placeholder="רחוב הרצל 12, תל אביב"/></div>
+          <div class="field"><label>WhatsApp (ספרות בלבד)</label><input id="s-whatsapp" placeholder="972501234567"/></div>
+          <div class="field"><label>אינסטגרם</label><input id="s-instagram" placeholder="@luxebarber"/></div>
+        </div>
+        <div class="settings-section">
+          <h3>🕒 שעות פעילות</h3>
+          <div class="form-row">
+            <div class="field"><label>פתיחה</label><input id="s-open" type="time" value="09:00"/></div>
+            <div class="field"><label>סגירה</label><input id="s-close" type="time" value="21:00"/></div>
+          </div>
+          <div class="field"><label>מרווח בין תורים (דקות)</label><input id="s-interval" type="number" value="30" min="10" max="120"/></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ APPOINTMENT DETAIL MODAL ══ -->
+<div class="modal-bg" id="apptModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title">פרטי הזמנה</div>
+      <button class="modal-close" onclick="closeModal('apptModal')">✕</button>
+    </div>
+    <div id="apptModalBody"></div>
+  </div>
+</div>
+
+<!-- ══ EDIT MODAL ══ -->
+<div class="modal-bg" id="editModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title" id="editModalTitle">עריכה</div>
+      <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <div id="editModalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('editModal')">ביטול</button>
+      <button class="btn btn-gold" id="editSaveBtn">שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ USER EDIT MODAL ══ -->
+<div class="modal-bg" id="userEditModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title" id="userEditTitle">עריכת לקוח</div>
+      <button class="modal-close" onclick="closeModal('userEditModal')">✕</button>
+    </div>
+    <div id="userEditBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('userEditModal')">ביטול</button>
+      <button class="btn btn-gold" id="userSaveBtn">שמור שינויים</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
+  setDoc, getDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import {
+  getStorage, ref, uploadBytes, getDownloadURL, deleteObject
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
+
+// ─── Firebase Init ────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyC2fqog1_PRGpaTlyUvWkryM96QhLpGdW0",
+  authDomain: "ben-snof.firebaseapp.com",
+  projectId: "ben-snof",
+  storageBucket: "ben-snof.firebasestorage.app",
+  messagingSenderId: "127646894375",
+  appId: "1:127646894375:web:848988f11bd4afef03c102"
+};
+const app     = initializeApp(firebaseConfig);
+const auth    = getAuth(app);
+const db      = getFirestore(app);
+const storage = getStorage(app);
+
+// ─── Admin emails ─────────────────────────────────────
+// ⚠️ רק כתובות אימייל שמופיעות כאן יוכלו להיכנס לפאנל הניהול
+const ADMIN_EMAILS = ["elianmizrahi@gmail.com","bensnof@gmail.com","ben@luxe.com"];
+
+// ─── Helpers ─────────────────────────────────────────
+const $  = id => document.getElementById(id);
+const $$ = sel => [...document.querySelectorAll(sel)];
+const pad = n => String(n).padStart(2,'0');
+const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today = dateKey(new Date());
+const HE_DAYS = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+const HE_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const fmtPrice = n => `₪${Number(n||0).toLocaleString('he-IL')}`;
+
+function toast(msg, type='info') {
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.className = '', 3500);
+}
+
+// ─── WhatsApp ─────────────────────────────────────────
+const normalizeWA = phone => String(phone||'').replace(/\D/g,'').replace(/^0/,'972');
+function sendWhatsApp(phone, message) {
+  const num = normalizeWA(phone);
+  if(!num || num.length < 10) return;
+  window.open(`https://wa.me/${num}?text=${encodeURIComponent(message)}`, '_blank');
+}
+
+// ─── Modal ────────────────────────────────────────────
+window.closeModal = id => $(id).classList.remove('open');
+function openModal(id) { $(id).classList.add('open'); }
+$$('.modal-bg').forEach(bg => bg.addEventListener('click', e => { if(e.target===bg) bg.classList.remove('open'); }));
+
+// ─── State ────────────────────────────────────────────
+let appointments = [], barbers = [], services = [], galleryItems = [], users = [], settings = {};
+let calView = 'month', calDate = new Date(), unsubAppts = null;
+
+// ─── Auth ─────────────────────────────────────────────
+$('loginBtn').onclick = async () => {
+  const email = $('loginEmail').value.trim();
+  const pass  = $('loginPass').value;
+  $('loginErr').textContent = '';
+  $('loginBtn').disabled = true;
+  $('loginBtn').textContent = 'מתחבר...';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    const msgs = {
+      'auth/user-not-found':'משתמש לא נמצא',
+      'auth/wrong-password':'סיסמה שגויה',
+      'auth/invalid-credential':'אימייל או סיסמה שגויים',
+      'auth/invalid-email':'אימייל לא תקין',
+      'auth/too-many-requests':'יותר מדי ניסיונות, נסה שוב מאוחר יותר',
+    };
+    $('loginErr').textContent = msgs[e.code] || 'שגיאת התחברות: '+e.message;
+  } finally {
+    $('loginBtn').disabled=false; $('loginBtn').textContent='התחבר';
+  }
+};
+$('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') $('loginBtn').click(); });
+$('logoutBtn').onclick = async () => {
+  if(unsubAppts){ unsubAppts(); unsubAppts=null; }
+  await signOut(auth);
+  $('shell').classList.remove('visible');
+  $('loginScreen').style.display='flex';
+  toast('התנתקת 👋','info');
+};
+
+onAuthStateChanged(auth, async user => {
+  if(!user) {
+    $('shell').classList.remove('visible');
+    $('loginScreen').style.display='flex';
+    return;
+  }
+  // בדוק אדמין לפי אימייל או Firestore
+  const isAdmin = ADMIN_EMAILS.includes(user.email);
+  let isAdminDoc = false;
+  try { const s = await getDoc(doc(db,'admins',user.uid)); isAdminDoc = s.exists(); } catch{}
+
+  if(!isAdmin && !isAdminDoc) {
+    await signOut(auth);
+    $('loginErr').textContent = 'אין הרשאת גישה — רק מנהלים יכולים להיכנס';
+    $('loginScreen').style.display='flex';
+    return;
+  }
+
+  $('loginScreen').style.display='none';
+  $('shell').classList.add('visible');
+
+  const name = user.displayName || user.email.split('@')[0];
+  $('adminName').textContent = name;
+  $('adminEmail').textContent = user.email;
+  $('adminAvatar').textContent = name.charAt(0).toUpperCase();
+  $('todayDate').textContent = new Date().toLocaleDateString('he-IL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  subscribeAppointments();
+  loadBarbers();
+  loadServices();
+  loadGallery();
+  loadUsers();
+  loadSettings();
+  navigatePage('dashboard');
+});
+
+// ─── Navigation ───────────────────────────────────────
+$$('[data-page]').forEach(btn => btn.addEventListener('click', () => navigatePage(btn.dataset.page)));
+function navigatePage(name) {
+  $$('.page').forEach(p=>p.classList.remove('active'));
+  const pg = $('page-'+name);
+  if(pg) pg.classList.add('active');
+  $$('.sb-btn').forEach(b=>b.classList.toggle('active', b.dataset.page===name));
+  if(name==='calendar') renderCalendar();
+  if(name==='users') loadUsers();
+}
+
+// ─── Appointments (real-time) ─────────────────────────
+function subscribeAppointments() {
+  if(unsubAppts) unsubAppts();
+  const q = query(collection(db,'appointments'), orderBy('createdAt','desc'));
+  unsubAppts = onSnapshot(q, snap => {
+    appointments = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderAppointments();
+    renderDashboard();
+    renderCalendar();
+  }, err => toast('שגיאה בטעינת הזמנות: '+err.message,'error'));
+}
+
+let apptFilter = 'all';
+function renderAppointments() {
+  const list = apptFilter==='all' ? appointments : appointments.filter(a=>a.status===apptFilter);
+  const el = $('apptList');
+  if(!list.length){ el.innerHTML=`<div class="empty"><div class="empty-ico">📅</div><p>אין הזמנות</p></div>`; return; }
+  el.innerHTML = list.map(a=>apptRowHTML(a)).join('');
+  bindApptActions(el);
+}
+
+function apptRowHTML(a) {
+  const name = a.userName || a.customerName || 'לקוח';
+  const init = name.charAt(0).toUpperCase();
+  const statusBadge = {
+    pending: '<span class="badge badge-pending">⏳ ממתין</span>',
+    approved:'<span class="badge badge-approved">✅ מאושר</span>',
+    rejected:'<span class="badge badge-rejected">❌ נדחה</span>',
+    completed:'<span class="badge badge-completed">✔️ הושלם</span>',
+  }[a.status] || '';
+  const phone = a.userPhone || a.phone || '';
+  return `<div class="appt-row" data-id="${a.id}">
+    <div class="appt-avatar">${init}</div>
+    <div class="appt-info">
+      <h4>${name}</h4>
+      <p>${a.serviceName||''} · ${a.barberName||''} · ${fmtPrice(a.servicePrice)}</p>
+      ${phone ? `<p style="color:var(--muted);font-size:11px">📱 ${phone}</p>` : ''}
+    </div>
+    <div class="appt-meta">
+      <div class="appt-date">${a.date||''}</div>
+      <div class="appt-time">${a.time||''}</div>
+      ${statusBadge}
+    </div>
+    <div class="appt-actions">
+      ${a.status==='pending' ? `<button class="btn btn-green btn-sm" data-approve="${a.id}">✅ אשר</button>` : ''}
+      ${a.status==='pending' ? `<button class="btn btn-red btn-sm" data-reject="${a.id}">❌ דחה</button>` : ''}
+      ${(a.status==='approved') ? `<button class="btn btn-orange btn-sm" data-cancel="${a.id}">🚫 בטל תור</button>` : ''}
+      <button class="btn btn-ghost btn-sm" data-detail="${a.id}">פרטים</button>
+    </div>
+  </div>`;
+}
+
+function bindApptActions(el) {
+  el.querySelectorAll('[data-approve]').forEach(btn => btn.addEventListener('click', e => { e.stopPropagation(); approveAppt(btn.dataset.approve); }));
+  el.querySelectorAll('[data-reject]').forEach(btn  => btn.addEventListener('click', e => { e.stopPropagation(); rejectAppt(btn.dataset.reject); }));
+  el.querySelectorAll('[data-cancel]').forEach(btn  => btn.addEventListener('click', e => { e.stopPropagation(); cancelAppt(btn.dataset.cancel); }));
+  el.querySelectorAll('[data-detail]').forEach(btn  => btn.addEventListener('click', e => { e.stopPropagation(); showApptDetail(btn.dataset.detail); }));
+}
+
+// ─── אישור תור — שולח WhatsApp ללקוח ─────────────────
+async function approveAppt(id) {
+  const a = appointments.find(x=>x.id===id);
+  if(!a) return;
+  try {
+    await updateDoc(doc(db,'appointments',id), { status:'approved' });
+    toast('התור אושר ✅ — שולח הודעה ללקוח','success');
+
+    // שלח ללקוח
+    const customerPhone = a.userPhone || a.phone || '';
+    if(customerPhone) {
+      const msg = `שלום ${a.userName||a.customerName||''}! 💈\nהתור שלך אושר ✅\n\n📋 ${a.serviceName||''}\n📅 ${a.date||''}\n🕐 ${a.time||''}\n✂️ ${a.barberName||''}\n\nאנחנו מחכים לך! 🙌`;
+      sendWhatsApp(customerPhone, msg);
+    }
+
+    // שלח לספר
+    const barberPhone = a.barberPhone || '';
+    if(barberPhone) {
+      const msg = `שלום ${a.barberName||''}!\nתור חדש אושר:\n👤 ${a.userName||a.customerName||''}\n📅 ${a.date||''} ⏰ ${a.time||''}\n💈 ${a.serviceName||''}`;
+      sendWhatsApp(barberPhone, msg);
+    }
+  } catch(e) { toast('שגיאה: '+e.message,'error'); }
+}
+
+// ─── דחיית תור — שולח WhatsApp ללקוח ─────────────────
+async function rejectAppt(id) {
+  if(!confirm('לדחות הזמנה זו?')) return;
+  const a = appointments.find(x=>x.id===id);
+  try {
+    await updateDoc(doc(db,'appointments',id), { status:'rejected' });
+    toast('ההזמנה נדחתה — שולח הודעה ללקוח','info');
+
+    const customerPhone = a?.userPhone || a?.phone || '';
+    if(customerPhone) {
+      const msg = `שלום ${a.userName||a.customerName||''}!\nהתור שלך ב-${a.date} בשעה ${a.time} בוטל ❌\nניתן להזמין תור חדש באתר שלנו.`;
+      sendWhatsApp(customerPhone, msg);
+    }
+
+    const barberPhone = a?.barberPhone || '';
+    if(barberPhone) {
+      const msg = `שלום ${a.barberName||''}!\nהתור ל-${a.userName||a.customerName||''} ב-${a.date} בשעה ${a.time} בוטל.`;
+      sendWhatsApp(barberPhone, msg);
+    }
+  } catch(e) { toast('שגיאה: '+e.message,'error'); }
+}
+
+// ─── ביטול תור ע"י מנהל — שולח WhatsApp ללקוח ────────
+async function cancelAppt(id) {
+  const a = appointments.find(x=>x.id===id);
+  if(!a) return;
+  const name = a.userName || a.customerName || 'לקוח';
+  const phone = a.userPhone || a.phone || '';
+
+  if(!confirm(`לבטל את התור של ${name} ב-${a.date} בשעה ${a.time}?`)) return;
+
+  try {
+    await updateDoc(doc(db,'appointments',id), { status:'rejected' });
+    toast('התור בוטל — שולח הודעה ללקוח','info');
+
+    // שלח ללקוח הודעת ביטול עם UID התור
+    if(phone) {
+      const msg = `היי ${name}! 👋\nהרצנו לך לעדכן שהתור שלך בוטל.\n\n📋 שירות: ${a.serviceName||''}\n📅 תאריך: ${a.date||''}\n🕐 שעה: ${a.time||''}\n\nלהזמנת תור חדש, נשמח לראותך! 💈`;
+      sendWhatsApp(phone, msg);
+    }
+  } catch(e) { toast('שגיאה: '+e.message,'error'); }
+}
+
+function showApptDetail(id) {
+  const a = appointments.find(x=>x.id===id);
+  if(!a) return;
+  const name = a.userName || a.customerName || 'לקוח';
+  const statusLabels = { pending:'⏳ ממתין לאישור', approved:'✅ מאושר', rejected:'❌ נדחה', completed:'✔️ הושלם' };
+  const custPhone = a.userPhone || a.phone || '';
+  const barbPhone = a.barberPhone || '';
+  $('apptModalBody').innerHTML = `
+    <div class="appt-detail-header">
+      <div class="appt-detail-avatar">${name.charAt(0).toUpperCase()}</div>
+      <div class="appt-detail-info">
+        <h3>${name}</h3>
+        <span class="badge badge-${a.status}">${statusLabels[a.status]||a.status}</span>
+      </div>
+    </div>
+    <div class="detail-row"><span class="detail-icon">📅</span><div class="detail-val"><div class="detail-label">תאריך ושעה</div>${a.date||'—'} · ${a.time||'—'}</div></div>
+    <div class="detail-row"><span class="detail-icon">💈</span><div class="detail-val"><div class="detail-label">שירות</div>${a.serviceName||'—'} · ${fmtPrice(a.servicePrice)} · ${a.serviceDuration||'—'} דק׳</div></div>
+    <div class="detail-row"><span class="detail-icon">✂️</span><div class="detail-val"><div class="detail-label">ספר</div>${a.barberName||'—'}</div></div>
+    <div class="detail-row"><span class="detail-icon">📱</span><div class="detail-val"><div class="detail-label">טלפון לקוח</div>${custPhone||'—'}</div></div>
+    ${barbPhone?`<div class="detail-row"><span class="detail-icon">📱</span><div class="detail-val"><div class="detail-label">טלפון ספר</div>${barbPhone}</div></div>`:''}
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      ${a.status==='pending'?`
+        <button class="btn btn-green" onclick="window.approveApptGlobal('${a.id}')">✅ אשר תור</button>
+        <button class="btn btn-red" onclick="window.rejectApptGlobal('${a.id}')">❌ דחה תור</button>
+      `:''}
+      ${a.status==='approved'?`<button class="btn btn-orange" onclick="window.cancelApptGlobal('${a.id}')">🚫 בטל תור</button>`:''}
+      ${custPhone?`<button class="btn btn-ghost" onclick="window.open('https://wa.me/${normalizeWA(custPhone)}?text=${encodeURIComponent('היי '+name+'!')}','_blank')">💬 WhatsApp ללקוח</button>`:''}
+      ${barbPhone?`<button class="btn btn-ghost" onclick="window.open('https://wa.me/${normalizeWA(barbPhone)}','_blank')">💬 WhatsApp לספר</button>`:''}
+    </div>
+  `;
+  openModal('apptModal');
+}
+
+window.approveApptGlobal = id => { closeModal('apptModal'); approveAppt(id); };
+window.rejectApptGlobal  = id => { closeModal('apptModal'); rejectAppt(id); };
+window.cancelApptGlobal  = id => { closeModal('apptModal'); cancelAppt(id); };
+
+$$('#apptChips .chip').forEach(c => c.addEventListener('click', () => {
+  $$('#apptChips .chip').forEach(x=>x.classList.remove('active'));
+  c.classList.add('active');
+  apptFilter = c.dataset.filter;
+  renderAppointments();
+}));
+
+// ─── Dashboard ────────────────────────────────────────
+function renderDashboard() {
+  const pending = appointments.filter(a=>a.status==='pending');
+  const todayApproved = appointments.filter(a=>a.status==='approved' && a.date===today);
+  $('kpi-pending').textContent = pending.length;
+  $('kpi-today').textContent   = todayApproved.length;
+  $('kpi-total').textContent   = appointments.length;
+  const badge = $('pendingBadge');
+  if(pending.length>0){ badge.textContent=pending.length; badge.style.display=''; }
+  else badge.style.display='none';
+  const el = $('dashPending');
+  const shown = pending.slice(0,5);
+  if(!shown.length){ el.innerHTML=`<div class="empty"><div class="empty-ico">✅</div><p>אין הזמנות ממתינות!</p></div>`; }
+  else { el.innerHTML = shown.map(a=>apptRowHTML(a)).join(''); bindApptActions(el); }
+}
+
+// ─── Calendar ─────────────────────────────────────────
+$$('[data-view]').forEach(btn => btn.addEventListener('click', () => {
+  $$('[data-view]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  calView = btn.dataset.view;
+  renderCalendar();
+}));
+$('calPrev').onclick = () => { calDate=calStep(-1); renderCalendar(); };
+$('calNext').onclick = () => { calDate=calStep(1);  renderCalendar(); };
+function calStep(dir) {
+  const d = new Date(calDate);
+  if(calView==='month') d.setMonth(d.getMonth()+dir);
+  else if(calView==='week') d.setDate(d.getDate()+dir*7);
+  else d.setDate(d.getDate()+dir);
+  return d;
+}
+function renderCalendar() {
+  if(calView==='month') renderMonthCal();
+  else if(calView==='week') renderWeekCal();
+  else renderDayCal();
+}
+function renderMonthCal() {
+  const y=calDate.getFullYear(), m=calDate.getMonth();
+  $('calTitle').textContent=`${HE_MONTHS[m]} ${y}`;
+  const first=new Date(y,m,1), last=new Date(y,m+1,0);
+  let startDay=first.getDay();
+  let gridHTML=`<div class="cal-month">`;
+  ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'].forEach(d=>gridHTML+=`<div class="cal-head-cell">${d}</div>`);
+  for(let i=0;i<startDay;i++){const d2=new Date(y,m,1-startDay+i);gridHTML+=`<div class="cal-cell other"><div class="day-n">${d2.getDate()}</div></div>`;}
+  for(let d=1;d<=last.getDate();d++){
+    const dk=`${y}-${pad(m+1)}-${pad(d)}`;
+    const isToday=dk===today;
+    const dayAppts=appointments.filter(a=>a.date===dk);
+    const dots=dayAppts.slice(0,3).map(a=>`<div class="cal-dot ${a.status}" onclick="window.showDayAppts('${dk}')">${a.time||''} ${(a.userName||'').split(' ')[0]||''}</div>`).join('');
+    const more=dayAppts.length>3?`<div class="cal-more">+${dayAppts.length-3} נוספים</div>`:'';
+    gridHTML+=`<div class="cal-cell${isToday?' today':''}" onclick="window.showDayAppts('${dk}')"><div class="day-n">${d}</div>${dots}${more}</div>`;
+  }
+  const total=startDay+last.getDate(), remain=total%7===0?0:7-total%7;
+  for(let i=1;i<=remain;i++) gridHTML+=`<div class="cal-cell other"><div class="day-n">${i}</div></div>`;
+  gridHTML+=`</div>`;
+  $('calBody').innerHTML=gridHTML;
+}
+window.showDayAppts = dk => {
+  calDate=new Date(dk);
+  $$('[data-view]').forEach(b=>b.classList.remove('active'));
+  document.querySelector('[data-view="day"]').classList.add('active');
+  calView='day'; renderCalendar();
+};
+function getWeekDates(d){const day=d.getDay(),start=new Date(d);start.setDate(d.getDate()-day);return Array.from({length:7},(_,i)=>{const x=new Date(start);x.setDate(start.getDate()+i);return x;});}
+function renderWeekCal() {
+  const days=getWeekDates(calDate);
+  $('calTitle').textContent=`${days[0].getDate()} ${HE_MONTHS[days[0].getMonth()]} – ${days[6].getDate()} ${HE_MONTHS[days[6].getMonth()]} ${days[6].getFullYear()}`;
+  const hours=[];for(let h=8;h<=22;h++)hours.push(h);
+  let html=`<div class="cal-week"><div class="week-header"><div class="week-head-cell" style="background:var(--surface)"></div>`;
+  days.forEach(d=>{const isT=dateKey(d)===today;html+=`<div class="week-head-cell${isT?' today-col':''}"><span class="week-date">${d.getDate()}</span>${HE_DAYS[d.getDay()]}</div>`;});
+  html+=`</div><div class="week-body">`;
+  hours.forEach(h=>{
+    html+=`<div class="week-row"><div class="week-time">${pad(h)}:00</div>`;
+    days.forEach(d=>{const dk=dateKey(d);const slotAppts=appointments.filter(a=>a.date===dk&&a.time&&parseInt(a.time.split(':')[0])===h);html+=`<div class="week-slot">`;slotAppts.forEach(a=>{html+=`<div class="week-event ${a.status}" onclick="window.showApptDetailGlobal('${a.id}')">${a.time} ${(a.userName||'').split(' ')[0]||''}</div>`;});html+=`</div>`;});
+    html+=`</div>`;
+  });
+  html+=`</div></div>`; $('calBody').innerHTML=html;
+}
+function renderDayCal() {
+  const dk=dateKey(calDate);
+  $('calTitle').textContent=`${HE_DAYS[calDate.getDay()]} ${calDate.getDate()} ${HE_MONTHS[calDate.getMonth()]} ${calDate.getFullYear()}`;
+  const dayAppts=appointments.filter(a=>a.date===dk);
+  const hours=[];for(let h=8;h<=22;h++)hours.push(h);
+  let html=`<div class="cal-day-view"><div class="day-view-header">${HE_DAYS[calDate.getDay()]}, ${calDate.getDate()} ${HE_MONTHS[calDate.getMonth()]} ${calDate.getFullYear()}</div>`;
+  hours.forEach(h=>{
+    const slotAppts=dayAppts.filter(a=>a.time&&parseInt(a.time.split(':')[0])===h);
+    html+=`<div class="day-slot-row"><div class="day-time">${pad(h)}:00</div><div class="day-events">`;
+    slotAppts.forEach(a=>{html+=`<div class="day-event ${a.status}" onclick="window.showApptDetailGlobal('${a.id}')"><strong>${a.time}</strong> · ${a.userName||a.customerName||'לקוח'} · ${a.serviceName||''}${a.status==='pending'?`<button class="btn btn-green btn-sm" onclick="event.stopPropagation();window.approveApptGlobal('${a.id}')" style="margin-right:8px">✅</button>`:''}</div>`;});
+    html+=`</div></div>`;
+  });
+  if(!dayAppts.length) html+=`<div class="empty"><div class="empty-ico">📅</div><p>אין תורים ביום זה</p></div>`;
+  html+=`</div>`;
+  $('calBody').innerHTML=html;
+}
+window.showApptDetailGlobal = showApptDetail;
+
+// ─── Barbers ──────────────────────────────────────────
+async function loadBarbers() {
+  try { const snap=await getDocs(collection(db,'barbers')); barbers=snap.docs.map(d=>({id:d.id,...d.data()})); renderBarbers(); }
+  catch(e){ toast('שגיאה בטעינת ספרים','error'); }
+}
+function renderBarbers() {
+  const el=$('barbersList');
+  if(!barbers.length){ el.innerHTML=`<div class="empty"><div class="empty-ico">✂️</div><p>אין ספרים עדיין</p></div>`; return; }
+  el.innerHTML=barbers.map(b=>`
+    <div class="item-card">
+      <div class="item-card-top">
+        <div class="item-img">${b.img?`<img src="${b.img}" alt="${b.name||''}"/>`:'✂️'}</div>
+        <div class="item-info"><h4>${b.name||'ספר'}</h4><p>${b.specialty||''}</p>${b.phone?`<p>📞 ${b.phone}</p>`:''}</div>
+      </div>
+      <div class="item-actions">
+        <button class="btn btn-ghost btn-sm" data-edit-barber="${b.id}">✏️ ערוך</button>
+        <button class="btn btn-red btn-sm" data-del-barber="${b.id}">🗑 מחק</button>
+      </div>
+    </div>`).join('');
+  el.querySelectorAll('[data-edit-barber]').forEach(btn=>btn.onclick=()=>editBarber(btn.dataset.editBarber));
+  el.querySelectorAll('[data-del-barber]').forEach(btn=>btn.onclick=()=>deleteBarber(btn.dataset.delBarber));
+}
+$('newBarberBtn').onclick=()=>editBarber(null);
+function editBarber(id) {
+  const b=id?barbers.find(x=>x.id===id):{};
+  $('editModalTitle').textContent=id?'עריכת ספר':'ספר חדש';
+  $('editModalBody').innerHTML=`
+    <div class="field"><label>שם מלא</label><input id="ef-name" value="${b?.name||''}"/></div>
+    <div class="field"><label>התמחות</label><input id="ef-spec" value="${b?.specialty||''}"/></div>
+    <div class="field"><label>טלפון WhatsApp</label><input id="ef-phone" value="${b?.phone||''}" placeholder="0501234567"/></div>
+    <div class="field"><label>URL תמונה</label><input id="ef-img" value="${b?.img||''}" placeholder="https://..."/></div>`;
+  openModal('editModal');
+  $('editSaveBtn').onclick=async()=>{
+    const data={name:$('ef-name').value.trim(),specialty:$('ef-spec').value.trim(),phone:$('ef-phone').value.trim(),img:$('ef-img').value.trim()};
+    if(!data.name) return toast('נא להזין שם','error');
+    try {
+      if(id) await updateDoc(doc(db,'barbers',id),data);
+      else await addDoc(collection(db,'barbers'),{...data,createdAt:serverTimestamp()});
+      toast(id?'ספר עודכן 💾':'ספר נוסף ✅','success'); closeModal('editModal'); loadBarbers();
+    } catch(e){ toast('שגיאה: '+e.message,'error'); }
+  };
+}
+async function deleteBarber(id) {
+  if(!confirm('למחוק ספר זה?')) return;
+  try { await deleteDoc(doc(db,'barbers',id)); toast('ספר נמחק','info'); loadBarbers(); }
+  catch(e){ toast('שגיאה: '+e.message,'error'); }
+}
+
+// ─── Services ─────────────────────────────────────────
+async function loadServices() {
+  try { const snap=await getDocs(collection(db,'services')); services=snap.docs.map(d=>({id:d.id,...d.data()})); renderServices(); }
+  catch(e){ toast('שגיאה בטעינת שירותים','error'); }
+}
+function renderServices() {
+  const el=$('servicesList');
+  if(!services.length){ el.innerHTML=`<div class="empty"><div class="empty-ico">💈</div><p>אין שירותים עדיין</p></div>`; return; }
+  el.innerHTML=services.map(s=>`
+    <div class="item-card">
+      <div class="item-card-top">
+        <div class="item-img">${s.img?`<img src="${s.img}" alt="${s.name||''}"/>`:'💈'}</div>
+        <div class="item-info"><h4>${s.name||'שירות'}</h4><p>${s.desc||''}</p><div class="item-price">${fmtPrice(s.price)} · ${s.duration||'?'} דק׳</div></div>
+      </div>
+      <div class="item-actions">
+        <button class="btn btn-ghost btn-sm" data-edit-service="${s.id}">✏️ ערוך</button>
+        <button class="btn btn-red btn-sm" data-del-service="${s.id}">🗑 מחק</button>
+      </div>
+    </div>`).join('');
+  el.querySelectorAll('[data-edit-service]').forEach(btn=>btn.onclick=()=>editService(btn.dataset.editService));
+  el.querySelectorAll('[data-del-service]').forEach(btn=>btn.onclick=()=>deleteService(btn.dataset.delService));
+}
+$('newServiceBtn').onclick=()=>editService(null);
+function editService(id) {
+  const s=id?services.find(x=>x.id===id):{};
+  $('editModalTitle').textContent=id?'עריכת שירות':'שירות חדש';
+  $('editModalBody').innerHTML=`
+    <div class="field"><label>שם השירות</label><input id="ef-name" value="${s?.name||''}"/></div>
+    <div class="field"><label>תיאור</label><textarea id="ef-desc">${s?.desc||''}</textarea></div>
+    <div class="form-row">
+      <div class="field"><label>מחיר (₪)</label><input id="ef-price" type="number" value="${s?.price||''}"/></div>
+      <div class="field"><label>משך (דקות)</label><input id="ef-dur" type="number" value="${s?.duration||''}"/></div>
+    </div>
+    <div class="field"><label>URL תמונה</label><input id="ef-img" value="${s?.img||''}" placeholder="https://..."/></div>`;
+  openModal('editModal');
+  $('editSaveBtn').onclick=async()=>{
+    const data={name:$('ef-name').value.trim(),desc:$('ef-desc').value.trim(),price:Number($('ef-price').value)||0,duration:Number($('ef-dur').value)||0,img:$('ef-img').value.trim()};
+    if(!data.name) return toast('נא להזין שם שירות','error');
+    try {
+      if(id) await updateDoc(doc(db,'services',id),data);
+      else await addDoc(collection(db,'services'),{...data,createdAt:serverTimestamp()});
+      toast(id?'שירות עודכן 💾':'שירות נוסף ✅','success'); closeModal('editModal'); loadServices();
+    } catch(e){ toast('שגיאה: '+e.message,'error'); }
+  };
+}
+async function deleteService(id) {
+  if(!confirm('למחוק שירות זה?')) return;
+  try { await deleteDoc(doc(db,'services',id)); toast('שירות נמחק','info'); loadServices(); }
+  catch(e){ toast('שגיאה: '+e.message,'error'); }
+}
+
+// ─── Gallery ──────────────────────────────────────────
+async function loadGallery() {
+  try { const snap=await getDocs(collection(db,'gallery')); galleryItems=snap.docs.map(d=>({id:d.id,...d.data()})); renderGallery(); }
+  catch(e){ toast('שגיאה בטעינת גלריה','error'); }
+}
+function renderGallery() {
+  const el=$('galleryGrid');
+  if(!galleryItems.length){ el.innerHTML=`<div class="empty"><div class="empty-ico">🖼️</div><p>הגלריה ריקה</p></div>`; return; }
+  el.innerHTML=galleryItems.map(g=>`
+    <div class="gallery-item">
+      <img src="${g.url}" alt="" loading="lazy"/>
+      <button class="gallery-del" data-del-gallery="${g.id}" data-path="${g.path||''}">🗑 מחק</button>
+    </div>`).join('');
+  el.querySelectorAll('[data-del-gallery]').forEach(btn=>btn.onclick=()=>deleteGalleryItem(btn.dataset.delGallery,btn.dataset.path));
+}
+$('galleryUpload').addEventListener('change', async e => {
+  const files=[...e.target.files]; if(!files.length) return;
+  toast('מעלה תמונות...','info');
+  let count=0;
+  for(const file of files){
+    try {
+      const path=`gallery/${Date.now()}_${file.name}`;
+      const sRef=ref(storage,path);
+      await uploadBytes(sRef,file);
+      const url=await getDownloadURL(sRef);
+      await addDoc(collection(db,'gallery'),{url,path,createdAt:serverTimestamp()});
+      count++;
+    } catch(err){ toast('שגיאה בהעלאה: '+err.message,'error'); }
+  }
+  toast(`${count} תמונות הועלו ✅`,'success'); e.target.value=''; loadGallery();
+});
+async function deleteGalleryItem(id,path) {
+  if(!confirm('למחוק תמונה זו?')) return;
+  try {
+    if(path){ try{ await deleteObject(ref(storage,path)); }catch{} }
+    await deleteDoc(doc(db,'gallery',id)); toast('תמונה נמחקה','info'); loadGallery();
+  } catch(e){ toast('שגיאה: '+e.message,'error'); }
+}
+
+// ─── Users (Firebase Console style) ───────────────────
+let allUsers = [];
+async function loadUsers() {
+  const grid = $('usersGrid');
+  grid.innerHTML = `<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--muted)">טוען לקוחות...</div>`;
+  try {
+    const [uSnap, aSnap] = await Promise.all([
+      getDocs(collection(db,'users')),
+      getDocs(collection(db,'appointments'))
+    ]);
+    $('kpi-users').textContent = uSnap.size;
+    $('usersCount').textContent = `· ${uSnap.size} רשומים`;
+
+    // מניית תורים לכל משתמש
+    const byUser = {};
+    aSnap.docs.forEach(d=>{ const uid=d.data().userId; if(uid) byUser[uid]=(byUser[uid]||0)+1; });
+
+    allUsers = uSnap.docs.map(d=>({id:d.id,...d.data(), appointmentCount: byUser[d.id]||0}));
+    renderUsersGrid(allUsers);
+  } catch(e){
+    grid.innerHTML=`<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--red)">שגיאה: ${e.message}</div>`;
+  }
+}
+
+function renderUsersGrid(list) {
+  const grid = $('usersGrid');
+  if(!list.length){ grid.innerHTML=`<div style="grid-column:1/-1" class="empty"><div class="empty-ico">👥</div><p>אין לקוחות רשומים</p></div>`; return; }
+  grid.innerHTML = list.map(u => {
+    const name = u.name || 'לקוח';
+    const initial = name.trim().charAt(0).toUpperCase();
+    const joined = u.createdAt?.toDate ? u.createdAt.toDate().toLocaleDateString('he-IL') : '—';
+    const photoHtml = u.photoURL
+      ? `<img src="${u.photoURL}" alt="${name}" onerror="this.parentElement.innerHTML='${initial}'"/>`
+      : initial;
+    const phone = u.phone || '';
+    const email = u.email || '';
+    return `<div class="user-card">
+      <div class="user-card-top">
+        <div class="user-photo">${photoHtml}</div>
+        <div class="user-main">
+          <strong title="${name}">${name}</strong>
+          <span title="${email}">${email || '—'}</span>
+          ${u.appointmentCount > 0 ? `<span class="user-badge" style="margin-top:4px">📅 ${u.appointmentCount} תורים</span>` : ''}
+        </div>
+      </div>
+      <div class="user-details">
+        ${phone ? `<div class="user-detail-row"><span class="ico">📱</span><span class="val">${phone}</span></div>` : `<div class="user-detail-row"><span class="ico">📱</span><span class="val" style="color:var(--muted2)">—</span></div>`}
+        <div class="user-detail-row"><span class="ico">📅</span><span class="val">הצטרף: ${joined}</span></div>
+        <div class="user-uid" title="${u.id}">UID: ${u.id}</div>
+      </div>
+      <div class="user-actions">
+        <button class="btn btn-ghost btn-sm" onclick="window.editUserModal('${u.id}')">✏️ ערוך</button>
+        ${phone ? `<button class="btn btn-green btn-sm" onclick="window.open('https://wa.me/${normalizeWA(phone)}','_blank')">💬 WhatsApp</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// חיפוש משתמשים
+$('usersSearch').addEventListener('input', () => {
+  const q = $('usersSearch').value.trim().toLowerCase();
+  if(!q){ renderUsersGrid(allUsers); return; }
+  const filtered = allUsers.filter(u =>
+    (u.name||'').toLowerCase().includes(q) ||
+    (u.email||'').toLowerCase().includes(q) ||
+    (u.phone||'').includes(q)
+  );
+  renderUsersGrid(filtered);
+});
+
+// עריכת משתמש
+window.editUserModal = (uid) => {
+  const u = allUsers.find(x=>x.id===uid);
+  if(!u) return;
+  $('userEditTitle').textContent = `✏️ עריכת לקוח`;
+  $('userEditBody').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+      <div class="user-photo" style="width:52px;height:52px;font-size:22px" id="editPhotoPreview">
+        ${u.photoURL ? `<img src="${u.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>` : (u.name||'?').charAt(0).toUpperCase()}
+      </div>
+      <div><div style="font-weight:700">${u.name||'לקוח'}</div><div style="font-size:12px;color:var(--muted)">${u.email||''}</div></div>
+    </div>
+    <div class="field"><label>שם מלא</label><input id="eu-name" value="${u.name||''}"/></div>
+    <div class="field"><label>טלפון</label><input id="eu-phone" value="${u.phone||''}" placeholder="050-0000000"/></div>
+    <div class="field"><label>URL תמונת פרופיל</label><input id="eu-photo" value="${u.photoURL||''}" placeholder="https://..." oninput="window.previewEditPhoto(this.value)"/></div>
+    <div class="field"><label>אימייל</label><input value="${u.email||''}" disabled style="opacity:.5;cursor:not-allowed" title="האימייל לא ניתן לשינוי כאן"/></div>
+  `;
+  openModal('userEditModal');
+  $('userSaveBtn').onclick = async () => {
+    const newName  = $('eu-name').value.trim();
+    const newPhone = $('eu-phone').value.trim();
+    const newPhoto = $('eu-photo').value.trim();
+    if(!newName) return toast('נא להזין שם','error');
+    $('userSaveBtn').disabled=true; $('userSaveBtn').textContent='שומר...';
+    try {
+      const updateData = { name: newName, phone: newPhone };
+      if(newPhoto) updateData.photoURL = newPhoto;
+      await updateDoc(doc(db,'users',uid), updateData);
+      toast('הלקוח עודכן ✅','success');
+      closeModal('userEditModal');
+      loadUsers();
+    } catch(e){ toast('שגיאה: '+e.message,'error'); }
+    finally { $('userSaveBtn').disabled=false; $('userSaveBtn').textContent='שמור שינויים'; }
+  };
+};
+
+window.previewEditPhoto = (url) => {
+  const el = $('editPhotoPreview');
+  if(url){ el.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='?'"/>`; }
+};
+
+// ─── Settings ─────────────────────────────────────────
+async function loadSettings() {
+  try {
+    const snap=await getDoc(doc(db,'settings','main'));
+    if(snap.exists()){
+      const s=snap.data();
+      $('s-name').value=s.name||''; $('s-phone').value=s.phone||'';
+      $('s-address').value=s.address||''; $('s-whatsapp').value=s.whatsapp||'';
+      $('s-instagram').value=s.instagram||''; $('s-open').value=s.openTime||'09:00';
+      $('s-close').value=s.closeTime||'21:00'; $('s-interval').value=s.interval||30;
+    }
+  } catch{}
+}
+$('saveSettingsBtn').onclick=async()=>{
+  const data={name:$('s-name').value.trim(),phone:$('s-phone').value.trim(),address:$('s-address').value.trim(),whatsapp:$('s-whatsapp').value.trim(),instagram:$('s-instagram').value.trim(),openTime:$('s-open').value,closeTime:$('s-close').value,interval:Number($('s-interval').value)||30,updatedAt:serverTimestamp()};
+  try { await setDoc(doc(db,'settings','main'),data,{merge:true}); toast('הגדרות נשמרו ✅','success'); }
+  catch(e){ toast('שגיאה: '+e.message,'error'); }
+};
+
+// ─── Init ─────────────────────────────────────────────
+$('todayDate').textContent=new Date().toLocaleDateString('he-IL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+</script>
+</body>
+</html>
