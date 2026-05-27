@@ -11,6 +11,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@600;700;900&display=swap" rel="stylesheet"/>
+<!-- Firebase App (the core Firebase SDK) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<!-- Firebase Realtime Database -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <style>
 /* ═══════════════════════════════════════
    ROOT VARIABLES
@@ -742,7 +746,384 @@ select.form-input option{background:var(--bg2)}
 .site-footer a{color:var(--gold);transition:color .2s}
 .site-footer a:hover{color:var(--text)}
 .bottom-spacer{height:20px}
+
+
+/* ═══════════════════════════════════════
+   LUXURY MARQUEE TICKER (PERFECT LOOP)
+═══════════════════════════════════════ */
+.marquee-wrap {
+  overflow: hidden;
+  user-select: none;
+  display: flex;
+  gap: 0;
+  padding: 14px 0;
+  background: linear-gradient(90deg, rgba(10,10,12,0.95) 0%, rgba(24,24,32,0.6) 50%, rgba(10,10,12,0.95) 100%);
+  border-top: 1px solid rgba(212, 175, 106, 0.2);
+  border-bottom: 1px solid rgba(212, 175, 106, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: relative;
+  direction: ltr; /* מונע קפיצות ואגים של דפדפנים ב-RTL */
+}
+
+/* מסכות טשטוש בצדדים למראה פרימיום קולנועי */
+.marquee-wrap::before,
+.marquee-wrap::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; width: 60px;
+  z-index: 2;
+  pointer-events: none;
+}
+.marquee-wrap::before {
+  left: 0;
+  background: linear-gradient(to right, #0a0a0c, transparent);
+}
+.marquee-wrap::after {
+  right: 0;
+  background: linear-gradient(to left, #0a0a0c, transparent);
+}
+
+.marquee-inner {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  min-width: 100%;
+  gap: 0;
+  animation: scroll-marquee 25s linear infinite;
+}
+
+.marquee-group {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  min-width: 100%;
+  gap: 40px;
+  padding: 0 20px;
+}
+
+.marquee-text {
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold, #d4af6a);
+  letter-spacing: 1px;
+  text-shadow: 0 0 15px rgba(212, 175, 106, 0.35);
+  white-space: nowrap;
+  direction: rtl; /* שומר על טקסט העברית קריא ומסודר מימין לשמאל */
+}
+
+/* עיצוב מטורף לאייקון המספרה */
+.marquee-barber-icon {
+  font-size: 18px;
+  display: inline-block;
+  filter: drop-shadow(0 0 8px rgba(212, 175, 106, 0.6));
+  animation: pulseIcon 3s ease-in-out infinite;
+}
+
+@keyframes scroll-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); } /* נע בדיוק חצי מרחק ומייצר לופ אינסופי מושלם */
+}
+
+@keyframes pulseIcon {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(10deg); }
+}
+
+/* ═══════════════════════════════════════
+   LUXURY INFINITE TICKER (NO GAPS)
+═══════════════════════════════════════ */
+.premium-marquee-container {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  background: linear-gradient(90deg, #09090b 0%, #16161f 50%, #09090b 100%);
+  padding: 16px 0;
+  border-top: 1px solid rgba(212, 175, 106, 0.25);
+  border-bottom: 1px solid rgba(212, 175, 106, 0.25);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6), 0 4px 20px rgba(0, 0, 0, 0.4);
+  display: flex;
+  user-select: none;
+  direction: ltr; /* מונע באגים של קפיצות בדפדפנים שונים במצב RTL */
+}
+
+/* אפקט טשטוש קולנועי בצדדים (Fade Masks) - גורם לטקסט להיעלם ולהופיע בהדרגה */
+.premium-marquee-container::before,
+.premium-marquee-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  z-index: 3;
+  pointer-events: none;
+}
+.premium-marquee-container::before {
+  left: 0;
+  background: linear-gradient(to right, #09090b, transparent);
+}
+.premium-marquee-container::after {
+  right: 0;
+  background: linear-gradient(to left, #09090b, transparent);
+}
+
+/* הדיב שמניע את הכל */
+.marquee-infinite-track {
+  display: flex;
+  width: max-content;
+  animation: seamless-scroll 20s linear infinite;
+}
+
+/* כל קבוצת טקסט (שתיהן חייבות להיות זהות לחלוטין) */
+.marquee-text-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 50px; /* המרחק בין המשפטים */
+  padding-right: 50px; /* שומר על רווח מדויק גם בחיבור בין הקבוצות */
+  flex-shrink: 0;
+}
+
+/* עיצוב הטקסט היוקרתי */
+.marquee-gold-text {
+  font-family: 'Heebo', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  color: #d4af6a; /* זהב בסיס */
+  background: linear-gradient(135deg, #b38f4f 0%, #f3d99d 50%, #d4af6a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+  text-shadow: 0 0 12px rgba(212, 175, 106, 0.25);
+  white-space: nowrap;
+  direction: rtl; /* שומר על קריאות נכונה של העברית בפנים */
+}
+
+/* האייקון המשוגע 💈 */
+.marquee-barber-pole {
+  font-size: 20px;
+  display: inline-block;
+  filter: drop-shadow(0 0 8px rgba(212, 175, 106, 0.7));
+  animation: spin-pole 4s linear infinite;
+}
+
+/* ═══════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════ */
+@keyframes seamless-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0); /* זז בדיוק חצי מהרוחב הכולל ויוצר לופ בלתי נראה */
+  }
+}
+
+@keyframes spin-pole {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1) rotate(-360deg); }
+}
+
+
+/* ═══════════════════════════════════════
+   CINEMATIC LIGHTBOX SLIDER & GRID
+═══════════════════════════════════════ */
+
+/* רשת הגלריה בדף הבית */
+.premium-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.premium-gallery-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #121216;
+}
+
+.premium-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.premium-gallery-item img:hover {
+  transform: scale(1.05);
+}
+
+/* מסך הלייטבוקס המלא */
+.luxe-lightbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(4, 4, 6, 0.96);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.luxe-lightbox.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* כפתור סגירה (איקס) עליון מרכזי ומעוצב */
+.luxe-lightbox-close {
+  position: absolute;
+  top: 35px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  color: #a1a1aa;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 100010;
+}
+
+.luxe-lightbox-close:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  color: #ef4444;
+  transform: translateX(-50%) rotate(90deg);
+}
+
+/* קונטיינר התמונה המרכזית */
+.luxe-lightbox-stage {
+  position: relative;
+  width: 88%;
+  max-width: 400px;
+  aspect-ratio: 4/5; /* יחס מושלם להצגת תספורות במובייל */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.luxe-lightbox-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid rgba(212, 175, 106, 0.2);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(212, 175, 106, 0.1);
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.luxe-lightbox-img.loaded {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* חצי ניווט מעוצבים צפים */
+.luxe-lightbox-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  background: rgba(18, 18, 22, 0.85);
+  border: 1px solid rgba(212, 175, 106, 0.2);
+  border-radius: 50%;
+  color: #d4af6a;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 100005;
+}
+
+.luxe-lightbox-btn:hover {
+  background: #d4af6a;
+  color: #000;
+  box-shadow: 0 0 15px rgba(212, 175, 106, 0.4);
+}
+
+.luxe-lightbox-prev {
+  right: -15px; /* חץ אחורה בצד ימין לפי RTL */
+}
+
+.luxe-lightbox-next {
+  left: -15px; /* חץ קדימה בצד שמאל לפי RTL */
+}
+
+/* מונה תמונות תחתון */
+.luxe-lightbox-counter {
+  margin-top: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #a1a1aa;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  letter-spacing: 1px;
+}
+
+/* ═══════════════════════════════════════
+   PREMIUM FLOATING TOAST (AUTO-HIDE)
+═══════════════════════════════════════ */
+.premium-toast {
+  position: fixed;
+  bottom: 15%; /* ממוקם בדיוק מעל אזור הכפתור התחתון */
+  left: 50%;
+  transform: translate(-50%, 25px); /* מתחיל מעט נמוך יותר בשביל אפקט העלייה */
+  background: rgba(18, 18, 22, 0.9); /* רקע כהה חצי שקוף */
+  backdrop-filter: blur(10px); /* אפקט זכוכית יוקרתי */
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 30px; /* קצוות מעוגלים כמו קפסולה נקייה */
+  border: 1px solid rgba(212, 175, 106, 0.3); /* מסגרת זהב עדינה */
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 106, 0.15);
+  font-family: 'Heebo', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+  z-index: 110000; /* דואג שזה יהיה מעל הכל */
+  opacity: 0; /* חבוי לחלוטין כברירת מחדל */
+  pointer-events: none; /* מונע חסימת לחיצות כשהוא חבוי */
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* אנימציה חלקה ומקפיצה */
+  white-space: nowrap;
+}
+
+/* הסטייט שמפעיל את ההצגה של הטוסט */
+.premium-toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0); /* עולה למקום ומקבל פוקוס */
+}
+
 </style>
+
 </head>
 <body>
 
@@ -753,7 +1134,7 @@ select.form-input option{background:var(--bg2)}
 <div id="splash">
   <div class="splash-logo">
     <div class="splash-mark">S</div>
-    <h1>SNUFKIN</h1>
+    <h1>סנופקין</h1>
     <p>נוף כנרת · LUXE BARBER</p>
   </div>
   <div class="splash-dots">
@@ -774,9 +1155,9 @@ select.form-input option{background:var(--bg2)}
 
       <!-- HERO -->
       <header class="hero" id="hero">
-        <div id="hero-slide-0" class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&q=80')"></div>
-        <div id="hero-slide-1" class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=1200&q=80')"></div>
-        <div id="hero-slide-2" class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=1200&q=80')"></div>
+                <div id="hero-slide-1" class="hero-slide" style="background-image:url('https://i.pinimg.com/736x/db/de/71/dbde71d6f6c37c3957e668353cb4fa34.jpg')"></div>
+        <div id="hero-slide-0" class="hero-slide active" style="background-image:url('https://i.pinimg.com/236x/f9/f1/df/f9f1dfa810424e70e26616d966150ba4.jpg')"></div>
+        <div id="hero-slide-2" class="hero-slide" style="background-image:url('https://i.pinimg.com/736x/ef/00/3a/ef003a7944fd524bd5fef66963e676ac.jpg')"></div>
         <div class="hero-overlay"></div>
         <div class="hero-orb hero-orb-1"></div>
         <div class="hero-orb hero-orb-2"></div>
@@ -802,32 +1183,43 @@ select.form-input option{background:var(--bg2)}
             <button class="btn btn-ghost" onclick="scrollTo('services-section')">השירותים שלנו</button>
           </div>
           <div class="stats glass">
-            <div class="stat"><strong id="sc1">0</strong><span>לקוחות</span></div>
+            <div class="stat"><strong id="sc1">100+</strong><span>לקוחות</span></div>
             <div class="stat-divider"></div>
-            <div class="stat"><strong id="sc2">0</strong><span>שנות ניסיון</span></div>
+            <div class="stat"><strong id="sc2">10+</strong><span>שנות ניסיון</span></div>
             <div class="stat-divider"></div>
-            <div class="stat"><strong id="sc3">0</strong><span>ביקורות</span></div>
+            <div class="stat"><strong id="sc3">150+</strong><span>ביקורות</span></div>
           </div>
         </div>
       </header>
 
       <!-- MARQUEE -->
-      <div class="marquee-wrap">
-        <div class="marquee-inner">
-          <span class="marquee-text"> מספרת סנופקין נוף כנרת</span>
-          <span class="marquee-text"><span class="marquee-sep">✦</span></span>
-          <span class="marquee-text">SNUFKIN LUXE BARBER</span>
-          <span class="marquee-text"><span class="marquee-sep">✦</span></span>
-          <span class="marquee-text">נוף כנרת · הזמנת תורים</span>
-          <span class="marquee-text"><span class="marquee-sep">✦</span></span>
-          <span class="marquee-text">סנופקין מספרת נוף כנרת</span>
-          <span class="marquee-text"><span class="marquee-sep">✦</span></span>
-          <span class="marquee-text">SNUFKIN LUXE BARBER</span>
-          <span class="marquee-text"><span class="marquee-sep">✦</span></span>
-          <span class="marquee-text">נוף כנרת · הזמנת תורים</span>
-          <span class="marquee-text"><span class="marquee-sep">✦</span></span>
-        </div>
-      </div>
+<div class="marquee-wrap">
+  <div class="marquee-inner">
+    
+    <div class="marquee-group">
+      <span class="marquee-text">  💈 מספרת סנופקין נוף כנרת 💈</span>
+
+      <span class="marquee-text"> 💈 SNUFKIN LUXE BARBER 💈</span>
+
+      <span class="marquee-text"> 💈 הזמנת תורים אונלין 💈 </span>
+
+      <span class="marquee-text">  💈 חווית טיפוח ברמה הגבוהה ביותר 💈 </span>
+
+    </div>
+    
+    <div class="marquee-group">
+      <span class="marquee-text">  💈 מספרת סנופקין נוף כנרת 💈</span>
+
+      <span class="marquee-text"> 💈 SNUFKIN LUXE BARBER 💈</span>
+
+      <span class="marquee-text"> 💈 הזמנת תורים אונלין 💈 </span>
+
+      <span class="marquee-text">  💈 חווית טיפוח ברמה הגבוהה ביותר 💈 </span>
+
+    </div>
+
+  </div>
+</div>
 
       <!-- SERVICES -->
       <section class="section" id="services-section">
@@ -842,31 +1234,35 @@ select.form-input option{background:var(--bg2)}
         </div>
       </section>
 
-      <!-- BARBERS -->
-      <section class="section" id="barbers-section">
-        <div class="section-head">
-          <h2>הצוות שלנו</h2>
-          <p>אומנים אמיתיים של עיצוב וסטייל</p>
-        </div>
-        <div class="barbers-scroll" id="barbersScroll">
-          <div class="skeleton skeleton-barber"></div>
-          <div class="skeleton skeleton-barber"></div>
-        </div>
-      </section>
 
-      <!-- GALLERY -->
-      <section class="section" id="gallery-section">
-        <div class="section-head">
-          <h2>גלריית עבודות</h2>
-          <p>החלק שמאלה לצפייה בתמונות נוספות</p>
-        </div>
-        <div class="gallery-swiper">
-          <div class="gallery-track" id="galleryTrack">
-            <div class="skeleton skeleton-tile"></div>
-            <div class="skeleton skeleton-tile"></div>
-          </div>
-        </div>
-      </section>
+<section style="padding: 20px; direction: rtl;">
+  <div style="margin-bottom: 15px;">
+    <h2 style="font-size: 1.25rem; font-weight: 800; color: #d4af6a; border-right: 3px solid #d4af6a; padding-right: 8px;">הלוקים שלנו</h2>
+  </div>
+  
+  <div id="luxeGalleryGrid" class="premium-gallery-grid">
+    </div>
+  
+  <button onclick="openLuxeLightbox(0)" style="width: 100%; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.3s;">
+    ראה את כל התמונות 💈
+  </button>
+</section>
+
+
+
+<div id="luxeLightbox" class="luxe-lightbox">
+  <div class="luxe-lightbox-close" onclick="closeLuxeLightbox()">&times;</div>
+  
+  <div class="luxe-lightbox-stage">
+    <button class="luxe-lightbox-btn luxe-lightbox-prev" onclick="changeLuxeImage(-1)">&#10095;</button>
+    
+    <img id="luxeLightboxImg" class="luxe-lightbox-img" src="" alt="Snufkin Barber Look">
+    
+    <button class="luxe-lightbox-btn luxe-lightbox-next" onclick="changeLuxeImage(1)">&#10094;</button>
+  </div>
+  
+  <div id="luxeLightboxCounter" class="luxe-lightbox-counter">0 / 0</div>
+</div>
 
       <!-- REVIEWS -->
       <section class="section">
@@ -905,15 +1301,15 @@ select.form-input option{background:var(--bg2)}
       </section>
 
       <!-- ABOUT -->
-      <section class="section about">
+      <section class="section about" id="about">
         <div class="about-card glass">
           <h2>אודות סנופקין LUXE</h2>
-          <p>מספרת בוטיק יוקרתית השוכנת בנוף כנרת. שילוב מנצח של שירות אישי, אווירה אקסקלוסיבית וטכניקות מתקדמות.</p>
+          <p>מספרת בוטיק יוקרתית השוכנת בנוף כנרת. שילוב מנצח של שירות אישי, אווירה מושלמת וטכניקות מתקדמות.</p>
           <ul class="about-list" id="aboutList">
             <li><span>📍</span> <span id="aboutAddress">שכונת נוף כנרת</span></li>
             <li><span>🕒</span> א׳-ה׳ 09:00-21:00 · ו׳ 09:00-14:00</li>
             <li><span>📞</span> <span id="aboutPhone">050-0000000</span></li>
-            <li><span>✉️</span> <span id="aboutEmail">info@snufkin.co.il</span></li>
+
           </ul>
         </div>
       </section>
@@ -1019,11 +1415,11 @@ select.form-input option{background:var(--bg2)}
     </button>
     <button class="nav-item" data-nav="home" data-scroll="my-bookings-section">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4M16 2v4M3 10h18M5 6h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/></svg>
-      <span>התורים שלי</span>
+      <a href="#my-bookings-section"><span>התורים שלי</span></a>
     </button>
     <button class="nav-item" data-nav="home" data-scroll="about">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-      <span>אודות</span>
+     <a href="#about"> <span>אודות</span></a>
     </button>
   </nav>
 
@@ -1033,10 +1429,11 @@ select.form-input option{background:var(--bg2)}
   </a>
 
   <footer class="site-footer">
-    <p>© סנופקין נוף כנרת · נבנה ע"י <span style="color:var(--gold);font-weight:700">COREDIGITAL</span> · <a href="admin/dashboard.html">מערכת ניהול</a></p>
+    <p>© סנופקין נוף כנרת · נבנה ע"י <span style="color:var(--gold);font-weight:700">COREDIGITAL</span> · <a href="admin/admin_old.html">מערכת ניהול</a></p>
   </footer>
 
-  <div id="toast"></div>
+<!-- אלמנט ההתראה הצפה החדש -->
+<div id="luxeToast" class="premium-toast"></div>
 
 </div><!-- /app -->
 
@@ -1052,13 +1449,34 @@ select.form-input option{background:var(--bg2)}
 <script>
 'use strict';
 // ══════════════════════════════════════
-// STORAGE
+// FIREBASE & STORAGE CONFIGURATION
 // ══════════════════════════════════════
-const LS={
-  get:k=>{try{return JSON.parse(localStorage.getItem('snufkin_'+k))}catch{return null}},
-  set:(k,v)=>localStorage.setItem('snufkin_'+k,JSON.stringify(v))
+const firebaseConfig = { 
+  apiKey: "AIzaSyC2fqog1_PRGpaTlyUvWkryM96QhLpGdW0", 
+  authDomain: "ben-snof.firebaseapp.com", 
+  databaseURL: "https://ben-snof-default-rtdb.firebaseio.com", 
+  projectId: "ben-snof", 
+  storageBucket: "ben-snof.firebasestorage.app", 
+  messagingSenderId: "127646894375", 
+  appId: "1:127646894375:web:848988f11bd4afef03c102" 
 };
 
+// אתחול Firebase במצב תאימות לגרסה הנוכחית
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// מנגנון ה-LS המשודרג שמסנכרן את הדפדפן ישירות מול Firebase
+const LS = {
+  get: k => {
+    try { return JSON.parse(localStorage.getItem('snufkin_'+k)) } catch { return null }
+  },
+  set: (k, v) => {
+    // שמירה מקומית מיידית למהירות חלקה של האתר
+    localStorage.setItem('snufkin_'+k, JSON.stringify(v));
+    // עדכון וסנכרון מיידי בזמן אמת ב-Firebase לענן
+    db.ref('snufkin/' + k).set(v);
+  }
+};
 // ══════════════════════════════════════
 // DEFAULT DATA
 // ══════════════════════════════════════
@@ -1117,10 +1535,19 @@ function normalizeWa(p){
 }
 
 let toastT;
-function toast(msg,type=''){
-  const el=document.getElementById('toast');
-  el.textContent=msg;el.className='toast show '+(type||'');
-  clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),3500);
+function toast(msg, type=''){
+  // תומך גם ב-ID החדש וגם בישן ליתר ביטחון
+  const el = document.getElementById('luxeToast') || document.getElementById('toast');
+  if (!el) return;
+
+  el.textContent = msg;
+  el.classList.add('show'); // מפעיל את האנימציה היוקרתית מה-CSS
+
+  clearTimeout(toastT);
+  // טיימר של 3 שניות בדיוק (3000 מילישניות) להעלמה מלאה
+  toastT = setTimeout(() => {
+    el.classList.remove('show');
+  }, 3000);
 }
 
 function scrollTo(id){
@@ -1232,11 +1659,34 @@ document.getElementById('confirmBtn').addEventListener('click',confirmBooking);
 // INIT PAGE DATA
 // ══════════════════════════════════════
 function initPage(){
-  loadContact();
-  loadServices();
-  loadGallery();
-  loadMyBookings();
-  updateWaFab();
+  // משיכת כל בסיס הנתונים מ-Firebase בטעינת האתר
+  db.ref('snufkin').once('value').then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      // עדכון הזיכרון המקומי במידע החדש ביותר שהגיע מהענן
+      if (data.bookings) localStorage.setItem('snufkin_bookings', JSON.stringify(data.bookings));
+      if (data.services) localStorage.setItem('snufkin_services', JSON.stringify(data.services));
+      if (data.gallery) localStorage.setItem('snufkin_gallery', JSON.stringify(data.gallery));
+      if (data.workinghours) localStorage.setItem('snufkin_workinghours', JSON.stringify(data.workinghours));
+      if (data.contact) localStorage.setItem('snufkin_contact', JSON.stringify(data.contact));
+      if (data.blockedhours) localStorage.setItem('snufkin_blockedhours', JSON.stringify(data.blockedhours));
+    }
+    
+    // קריאה לפונקציות הרינדור המקוריות שלך להצגת המידע במסך
+    loadContact();
+    loadServices();
+    loadGallery();
+    loadMyBookings();
+    updateWaFab();
+  }).catch(err => {
+    console.error("שגיאה בסנכרון מול Firebase:", err);
+    // גיבוי בטוח: אם אין אינטרנט או יש שגיאה, האתר יטען על בסיס המידע השמור בדפדפן
+    loadContact();
+    loadServices();
+    loadGallery();
+    loadMyBookings();
+    updateWaFab();
+  });
 }
 
 // ══════════════════════════════════════
@@ -1571,6 +2021,140 @@ document.getElementById('servicesGrid').addEventListener('click',e=>{
     selectService(sid);
   },100);
 });
+
+
+// ═══════════════════════════════════════
+// LIVE GALLERY & CINEMATIC LIGHTBOX SYSTEM
+// ═══════════════════════════════════════
+
+const CORE_FALLBACKS = [
+  "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=600",
+  "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=600",
+  "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=600",
+  "https://images.unsplash.com/photo-1517832606589-7a598b389203?q=80&w=600"
+];
+
+let currentLightboxIdx = 0;
+let currentImagesList = [];
+
+// פונקציית טעינה ורינדור של 4 התמונות הראשיות
+function loadLuxeGallery() {
+  const storedData = localStorage.getItem('snufkin_gallery_data');
+  currentImagesList = storedData ? JSON.parse(storedData) : CORE_FALLBACKS;
+  
+  const grid = document.getElementById('luxeGalleryGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  
+  // מציג תמיד מקסימום 4 תמונות בדף הבית
+  currentImagesList.slice(0, 4).forEach((src, idx) => {
+    grid.innerHTML += `
+      <div class="premium-gallery-item">
+        <img src="${src}" onclick="openLuxeLightbox(${idx})" alt="תספורת">
+      </div>`;
+  });
+}
+
+// פתיחת הלייטבוקס מהאינדקס שנבחר
+function openLuxeLightbox(index) {
+  // וידוא מחדש של רשימת התמונות המעודכנת ביותר
+  const storedData = localStorage.getItem('snufkin_gallery_data');
+  currentImagesList = storedData ? JSON.parse(storedData) : CORE_FALLBACKS;
+  
+  if (currentImagesList.length === 0) return;
+  
+  currentLightboxIdx = index;
+  const lightbox = document.getElementById('luxeLightbox');
+  const img = document.getElementById('luxeLightboxImg');
+  
+  img.classList.remove('loaded');
+  img.src = currentImagesList[currentLightboxIdx];
+  
+  lightbox.classList.add('active');
+  
+  img.onload = () => {
+    img.classList.add('loaded');
+  };
+  
+  updateLightboxStatus();
+}
+
+// סגירת הלייטבוקס
+function closeLuxeLightbox() {
+  document.getElementById('luxeLightbox').classList.remove('active');
+}
+
+// דפדוף בין תמונות (1 קדימה, -1 אחורה)
+function changeLuxeImage(dir) {
+  if (currentImagesList.length <= 1) return;
+  
+  currentLightboxIdx += dir;
+  
+  // לופ אינסופי חכם במעבר בין הקצוות
+  if (currentLightboxIdx >= currentImagesList.length) currentLightboxIdx = 0;
+  if (currentLightboxIdx < 0) currentLightboxIdx = currentImagesList.length - 1;
+  
+  const img = document.getElementById('luxeLightboxImg');
+  img.classList.remove('loaded');
+  
+  setTimeout(() => {
+    img.src = currentImagesList[currentLightboxIdx];
+    updateLightboxStatus();
+  }, 100);
+}
+
+// עדכון המונה התחתון
+function updateLightboxStatus() {
+  const counter = document.getElementById('luxeLightboxCounter');
+  if (counter) {
+    counter.innerText = `${currentLightboxIdx + 1} / ${currentImagesList.length}`;
+  }
+}
+
+// מאזין לסנכרון מיידי בין טאבים (בזמן שהמנהל מוסיף/מוחק בדף הניהול)
+window.addEventListener('storage', (e) => {
+  if (e.key === 'snufkin_gallery_data') {
+    loadLuxeGallery();
+    // עדכון הלייטבוקס אם הוא פתוח כרגע
+    if (document.getElementById('luxeLightbox').classList.contains('active')) {
+      const storedData = localStorage.getItem('snufkin_gallery_data');
+      currentImagesList = storedData ? JSON.parse(storedData) : CORE_FALLBACKS;
+      if (currentLightboxIdx >= currentImagesList.length) currentLightboxIdx = 0;
+      updateLightboxStatus();
+    }
+  }
+});
+
+// הפעלה ראשונית
+document.addEventListener('DOMContentLoaded', loadLuxeGallery);
+
+// פונקציית התראה צפה עם טיימר מובנה ל-3 שניות
+function triggerLuxeToast(message) {
+  const toast = document.getElementById('luxeToast');
+  if (!toast) return;
+
+  // 1. נסגור התראה קודמת מיד אם היא כבר פתוחה כדי למנוע באגים
+  toast.classList.remove('show');
+  
+  // 2. נעדכן את הטקסט החדש
+  toast.innerText = message;
+  
+  // 3. נציג את ההתראה עם האנימציה
+  toast.classList.add('show');
+  
+  // 4. טיימר חכם: אחרי בדיוק 3 שניות (3000 מילישניות) נעלים אותה לחלוטין
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
+// דוגמה לאיך לקרוא לפונקציה הזו מתוך כפתור קביעת התור שלך:
+function handleBookingSubmit() {
+  // כאן הלוגיקה הקיימת שלך (בדיקת שדות, וולידציה וכד')
+  
+  // ברגע שהכל תקין וההזמנה בוצעה:
+  triggerLuxeToast("🎉 ההזמנה בוצעה בהצלחה ל-3 שניות!");
+}
 </script>
 </body>
 </html>
