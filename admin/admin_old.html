@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@600;700;900&display=swap" rel="stylesheet"/>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <style>
 :root{
   --bg:#08080a;--bg2:#0f0f12;--bg3:#141418;
@@ -781,7 +781,7 @@ const firebaseConfig = {
 
 // אתחול Firebase
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db = firebase.firestore();
 
 // מנגנון ה-LS המשודרג שמסנכרן את הדפדפן ישירות מול Firebase
 const LS = {
@@ -792,7 +792,7 @@ const LS = {
     // שמירה מקומית מיידית למהירות חלקה של האתר
     localStorage.setItem('snufkin_'+k, JSON.stringify(v));
     // עדכון וסנכרון מיידי בזמן אמת ב-Firebase לענן
-    db.ref('snufkin/' + k).set(v);
+db.collection('snufkin').doc(k).set(v);
   }
 };
 
