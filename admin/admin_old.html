@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@600;700;900&display=swap" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <style>
 :root{
   --bg:#08080a;--bg2:#0f0f12;--bg3:#141418;
@@ -772,7 +772,7 @@ tr:hover td{background:var(--surface)}
 const firebaseConfig = { 
   apiKey: "AIzaSyC2fqog1_PRGpaTlyUvWkryM96QhLpGdW0", 
   authDomain: "ben-snof.firebaseapp.com", 
-  databaseURL: "https://ben-snof-default-rtdb.firebaseio.com", 
+databaseURL: "https://ben-snof-6f09d-default-rtdb.firebaseio.com",
   projectId: "ben-snof", 
   storageBucket: "ben-snof.firebasestorage.app", 
   messagingSenderId: "127646894375", 
@@ -781,18 +781,28 @@ const firebaseConfig = {
 
 // אתחול Firebase
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db = firebase.database();
 
 // מנגנון ה-LS המשודרג שמסנכרן את הדפדפן ישירות מול Firebase
 const LS = {
   get: k => {
-    try { return JSON.parse(localStorage.getItem('snufkin_'+k)) } catch { return null }
+    try {
+      return JSON.parse(localStorage.getItem('snufkin_' + k))
+    } catch {
+      return null
+    }
   },
+
   set: (k, v) => {
-    // שמירה מקומית מיידית למהירות חלקה של האתר
-    localStorage.setItem('snufkin_'+k, JSON.stringify(v));
-    // עדכון וסנכרון מיידי בזמן אמת ב-Firebase לענן
-db.collection('snufkin').doc(k).set(v);
+
+    // שמירה מקומית
+    localStorage.setItem(
+      'snufkin_' + k,
+      JSON.stringify(v)
+    );
+
+    // שמירה לענן Firebase
+    db.ref('snufkin/' + k).set(v);
   }
 };
 
@@ -931,33 +941,53 @@ function closeSidebar(){
 function init() {
   // משיכת כל בסיס הנתונים מ-Firebase בטעינת פאנל הניהול
   db.ref('snufkin').once('value').then(snapshot => {
-    const data = snapshot.val();
-    if (data) {
-      // עדכון הזיכרון המקומי במידע החדש ביותר שהגיע מהענן
-      if (data.bookings) localStorage.setItem('snufkin_bookings', JSON.stringify(data.bookings));
-      if (data.services) localStorage.setItem('snufkin_services', JSON.stringify(data.services));
-      if (data.gallery) localStorage.setItem('snufkin_gallery', JSON.stringify(data.gallery));
-      if (data.workinghours) localStorage.setItem('snufkin_workinghours', JSON.stringify(data.workinghours));
-      if (data.contact) localStorage.setItem('snufkin_contact', JSON.stringify(data.contact));
-      if (data.blockedhours) localStorage.setItem('snufkin_blockedhours', JSON.stringify(data.blockedhours));
-      if (data.admin_password) localStorage.setItem('snufkin_admin_password', JSON.stringify(data.admin_password));
-    }
-    
-    // הפעלת פונקציות הניהול המקוריות של הדשבורד
-    autoDeleteOldBookings();
-    if(document.getElementById('dashDate')) {
-      document.getElementById('dashDate').textContent = new Date().toLocaleDateString('he-IL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-      initDashboard();
-    }
-  }).catch(err => {
-    console.error("שגיאה בסנכרון מול Firebase בפאנל הניהול:", err);
-    // גיבוי: במקרה של תקלה ממשיך לעבוד על בסיס הזיכרון המקומי
-    autoDeleteOldBookings();
-    if(document.getElementById('dashDate')) {
-      document.getElementById('dashDate').textContent = new Date().toLocaleDateString('he-IL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-      initDashboard();
-    }
-  });
+   db.ref('snufkin').on('value', snapshot => {
+
+  const data = snapshot.val();
+
+  if (!data) return;
+
+  if (data.bookings)
+    localStorage.setItem(
+      'snufkin_bookings',
+      JSON.stringify(data.bookings)
+    );
+
+  if (data.services)
+    localStorage.setItem(
+      'snufkin_services',
+      JSON.stringify(data.services)
+    );
+
+  if (data.gallery)
+    localStorage.setItem(
+      'snufkin_gallery',
+      JSON.stringify(data.gallery)
+    );
+
+  if (data.workinghours)
+    localStorage.setItem(
+      'snufkin_workinghours',
+      JSON.stringify(data.workinghours)
+    );
+
+  if (data.contact)
+    localStorage.setItem(
+      'snufkin_contact',
+      JSON.stringify(data.contact)
+    );
+
+  if (data.blockedhours)
+    localStorage.setItem(
+      'snufkin_blockedhours',
+      JSON.stringify(data.blockedhours)
+    );
+
+  renderBookings();
+  renderServices();
+  initDashboard();
+});
+});
 }
 
 // ══════════════════════════════════════
@@ -1504,6 +1534,57 @@ function handlePasswordChange(event) {
   toast('🔒 הסיסמה עודכנה בהצלחה!', 'success');
   
   initPasswordPage();
+}
+
+function init() {
+
+  db.ref('snufkin').on('value', snapshot => {
+
+    const data = snapshot.val();
+
+    if (!data) return;
+
+    if (data.bookings)
+      localStorage.setItem(
+        'snufkin_bookings',
+        JSON.stringify(data.bookings)
+      );
+
+    if (data.services)
+      localStorage.setItem(
+        'snufkin_services',
+        JSON.stringify(data.services)
+      );
+
+    if (data.gallery)
+      localStorage.setItem(
+        'snufkin_gallery',
+        JSON.stringify(data.gallery)
+      );
+
+    if (data.workinghours)
+      localStorage.setItem(
+        'snufkin_workinghours',
+        JSON.stringify(data.workinghours)
+      );
+
+    if (data.contact)
+      localStorage.setItem(
+        'snufkin_contact',
+        JSON.stringify(data.contact)
+      );
+
+    if (data.blockedhours)
+      localStorage.setItem(
+        'snufkin_blockedhours',
+        JSON.stringify(data.blockedhours)
+      );
+
+    renderBookings();
+    renderServices();
+    initDashboard();
+  });
+
 }
 </script>
 
