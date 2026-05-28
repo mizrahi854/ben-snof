@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@600;700;900&display=swap" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 <style>
 :root{
   --bg:#08080a;--bg2:#0f0f12;--bg3:#141418;
@@ -608,6 +609,7 @@ tr:hover td{background:var(--surface)}
     </section>
 
     <!-- GALLERY -->
+     <section>
 <div class="gallery-admin-card" style="background: #15151a; border: 1px solid rgba(255,255,255,0.08); padding: 20px; border-radius: 15px; margin-bottom: 20px; direction: rtl;">
   <h3 style="color: #d4af6a; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; font-size: 1.05rem; margin-bottom: 15px; font-weight: 800;">ניהול תמונות בגלריית האתר (סנכרון חי)</h3>
   
@@ -619,8 +621,10 @@ tr:hover td{background:var(--surface)}
     </div>
   </div>
 
+
   <div id="adminGalleryPreviewGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;"></div>
 </div>
+  </section>
 
     <!-- CONTACT -->
     <section class="page-section" id="sec-contact">
@@ -782,6 +786,7 @@ databaseURL: "https://ben-snof-6f09d-default-rtdb.firebaseio.com",
 // אתחול Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const storage = firebase.storage();
 
 // מנגנון ה-LS המשודרג שמסנכרן את הדפדפן ישירות מול Firebase
 const LS = {
