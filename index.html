@@ -11,9 +11,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@600;700;900&display=swap" rel="stylesheet"/>
-<!-- Firebase App (the core Firebase SDK) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+const firebaseConfig = { 
+  apiKey: "AIzaSyC2fqog1_PRGpaTlyUvWkryM96QhLpGdW0", 
+  authDomain: "ben-snof.firebaseapp.com", 
+  databaseURL: "https://ben-snof-6f09d-default-rtdb.firebaseio.com", 
+  projectId: "ben-snof", 
+  storageBucket: "ben-snof.firebasestorage.app", 
+  messagingSenderId: "127646894375", 
+  appId: "1:127646894375:web:848988f11bd4afef03c102" 
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+</script>
 <style>
 /* ═══════════════════════════════════════
    ROOT VARIABLES
@@ -1122,7 +1136,6 @@ select.form-input option{background:var(--bg2)}
 }
 
 </style>
-
 </head>
 <body>
 
@@ -1448,36 +1461,13 @@ select.form-input option{background:var(--bg2)}
 <script>
 'use strict';
 // ══════════════════════════════════════
-// FIREBASE & STORAGE CONFIGURATION
+// STORAGE
 // ══════════════════════════════════════
-const firebaseConfig = { 
-  apiKey: "AIzaSyC2fqog1_PRGpaTlyUvWkryM96QhLpGdW0", 
-  authDomain: "ben-snof.firebaseapp.com", 
-  databaseURL: "https://ben-snof-default-rtdb.firebaseio.com", 
-  projectId: "ben-snof", 
-  storageBucket: "ben-snof.firebasestorage.app", 
-  messagingSenderId: "127646894375", 
-  appId: "1:127646894375:web:848988f11bd4afef03c102" 
+const LS={
+  get:k=>{try{return JSON.parse(localStorage.getItem('snufkin_'+k))}catch{return null}},
+  set:(k,v)=>localStorage.setItem('snufkin_'+k,JSON.stringify(v))
 };
 
-// אתחול Firebase במצב תאימות לגרסה הנוכחית
-db.collection('test').add({
-  hello: "world",
-  time: new Date()
-});
-
-// מנגנון ה-LS המשודרג שמסנכרן את הדפדפן ישירות מול Firebase
-const LS = {
-  get: k => {
-    try { return JSON.parse(localStorage.getItem('snufkin_'+k)) } catch { return null }
-  },
-  set: (k, v) => {
-    // שמירה מקומית מיידית למהירות חלקה של האתר
-    localStorage.setItem('snufkin_'+k, JSON.stringify(v));
-    // עדכון וסנכרון מיידי בזמן אמת ב-Firebase לענן
-db.collection('snufkin').doc(k).set(v);
-  }
-};
 // ══════════════════════════════════════
 // DEFAULT DATA
 // ══════════════════════════════════════
@@ -1660,34 +1650,11 @@ document.getElementById('confirmBtn').addEventListener('click',confirmBooking);
 // INIT PAGE DATA
 // ══════════════════════════════════════
 function initPage(){
-  // משיכת כל בסיס הנתונים מ-Firebase בטעינת האתר
-  db.ref('snufkin').once('value').then(snapshot => {
-    const data = snapshot.val();
-    if (data) {
-      // עדכון הזיכרון המקומי במידע החדש ביותר שהגיע מהענן
-      if (data.bookings) localStorage.setItem('snufkin_bookings', JSON.stringify(data.bookings));
-      if (data.services) localStorage.setItem('snufkin_services', JSON.stringify(data.services));
-      if (data.gallery) localStorage.setItem('snufkin_gallery', JSON.stringify(data.gallery));
-      if (data.workinghours) localStorage.setItem('snufkin_workinghours', JSON.stringify(data.workinghours));
-      if (data.contact) localStorage.setItem('snufkin_contact', JSON.stringify(data.contact));
-      if (data.blockedhours) localStorage.setItem('snufkin_blockedhours', JSON.stringify(data.blockedhours));
-    }
-    
-    // קריאה לפונקציות הרינדור המקוריות שלך להצגת המידע במסך
     loadContact();
     loadServices();
     loadGallery();
     loadMyBookings();
     updateWaFab();
-  }).catch(err => {
-    console.error("שגיאה בסנכרון מול Firebase:", err);
-    // גיבוי בטוח: אם אין אינטרנט או יש שגיאה, האתר יטען על בסיס המידע השמור בדפדפן
-    loadContact();
-    loadServices();
-    loadGallery();
-    loadMyBookings();
-    updateWaFab();
-  });
 }
 
 // ══════════════════════════════════════
@@ -2156,14 +2123,6 @@ function handleBookingSubmit() {
   // ברגע שהכל תקין וההזמנה בוצעה:
   triggerLuxeToast("🎉 ההזמנה בוצעה בהצלחה ל-3 שניות!");
 }
-db.collection('test').add({
-  hello: "world"
-});
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 </script>
-
-
 </body>
 </html>
