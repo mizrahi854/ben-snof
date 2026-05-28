@@ -1655,6 +1655,51 @@ function initPage(){
     loadGallery();
     loadMyBookings();
     updateWaFab();
+    // הפעל סנכרון Firebase בזמן אמת
+    initFirebaseSync();
+}
+
+// ══════════════════════════════════════
+// FIREBASE REALTIME SYNC (שכבת סנכרון)
+// ══════════════════════════════════════
+function initFirebaseSync(){
+  if(typeof firebase === 'undefined' || typeof db === 'undefined') return;
+
+  // services
+  db.ref('snufkin/services').on('value', snap => {
+    const val = snap.val();
+    if(val) { LS.set('services', val); loadServices(); initStep1(); }
+  });
+
+  // gallery
+  db.ref('snufkin/gallery').on('value', snap => {
+    const val = snap.val();
+    if(val) { LS.set('gallery', val); loadGallery(); loadLuxeGallery(); }
+  });
+
+  // workinghours
+  db.ref('snufkin/workinghours').on('value', snap => {
+    const val = snap.val();
+    if(val) { LS.set('workinghours', val); }
+  });
+
+  // contact
+  db.ref('snufkin/contact').on('value', snap => {
+    const val = snap.val();
+    if(val) { LS.set('contact', val); loadContact(); updateWaFab(); }
+  });
+
+  // bookings
+  db.ref('snufkin/bookings').on('value', snap => {
+    const val = snap.val();
+    if(val) { LS.set('bookings', val); loadMyBookings(); }
+  });
+
+  // blockedhours
+  db.ref('snufkin/blockedhours').on('value', snap => {
+    const val = snap.val();
+    if(val !== null) { LS.set('blockedhours', val || {}); }
+  });
 }
 
 // ══════════════════════════════════════
