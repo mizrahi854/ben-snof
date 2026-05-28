@@ -940,54 +940,41 @@ function closeSidebar(){
 // ══════════════════════════════════════
 function init() {
   // משיכת כל בסיס הנתונים מ-Firebase בטעינת פאנל הניהול
-  db.ref('snufkin').once('value').then(snapshot => {
-   db.ref('snufkin').on('value', snapshot => {
+  db.ref('snufkin').on('value', snapshot => {
 
-  const data = snapshot.val();
+    const data = snapshot.val();
 
-  if (!data) return;
+    if (!data) return;
 
-  if (data.bookings)
-    localStorage.setItem(
-      'snufkin_bookings',
-      JSON.stringify(data.bookings)
-    );
+    if (data.bookings)
+      LS.set('bookings', data.bookings);
 
-  if (data.services)
-    localStorage.setItem(
-      'snufkin_services',
-      JSON.stringify(data.services)
-    );
+    if (data.services)
+      LS.set('services', data.services);
 
-  if (data.gallery)
-    localStorage.setItem(
-      'snufkin_gallery',
-      JSON.stringify(data.gallery)
-    );
+    if (data.gallery) {
+      LS.set('gallery', data.gallery);
+      // סנכרון גם ל-snufkin_gallery_data עבור תצוגת ניהול הגלריה
+      const urlArr = Array.isArray(data.gallery)
+        ? data.gallery.map(g => (typeof g === 'string' ? g : g.url))
+        : [];
+      localStorage.setItem('snufkin_gallery_data', JSON.stringify(urlArr));
+    }
 
-  if (data.workinghours)
-    localStorage.setItem(
-      'snufkin_workinghours',
-      JSON.stringify(data.workinghours)
-    );
+    if (data.workinghours)
+      LS.set('workinghours', data.workinghours);
 
-  if (data.contact)
-    localStorage.setItem(
-      'snufkin_contact',
-      JSON.stringify(data.contact)
-    );
+    if (data.contact)
+      LS.set('contact', data.contact);
 
-  if (data.blockedhours)
-    localStorage.setItem(
-      'snufkin_blockedhours',
-      JSON.stringify(data.blockedhours)
-    );
+    if (data.blockedhours)
+      LS.set('blockedhours', data.blockedhours);
 
-  renderBookings();
-  renderServices();
-  initDashboard();
-});
-});
+    renderBookings();
+    renderServices();
+    renderAdminGallery();
+    initDashboard();
+  });
 }
 
 // ══════════════════════════════════════
@@ -1440,6 +1427,9 @@ function addImgFromAdmin() {
   
   const images = getAdminGallery();
   images.unshift(url); // מוסיף להתחלה כדי שהתמונה החדשה תהיה הראשונה בדף הבית
+  // שמירה ל-Firebase דרך LS.set (גיבוי + ענן)
+  const galleryObjects = images.map((u, i) => ({ id: 'g' + i, url: u }));
+  LS.set('gallery', galleryObjects);
   localStorage.setItem('snufkin_gallery_data', JSON.stringify(images));
   
   input.value = '';
@@ -1450,6 +1440,9 @@ function deleteImgFromAdmin(idx) {
   if (confirm("האם למחוק את התמונה הזו מהאתר?")) {
     const images = getAdminGallery();
     images.splice(idx, 1);
+    // שמירה ל-Firebase דרך LS.set (גיבוי + ענן)
+    const galleryObjects = images.map((u, i) => ({ id: 'g' + i, url: u }));
+    LS.set('gallery', galleryObjects);
     localStorage.setItem('snufkin_gallery_data', JSON.stringify(images));
     renderAdminGallery();
   }
@@ -1536,56 +1529,7 @@ function handlePasswordChange(event) {
   initPasswordPage();
 }
 
-function init() {
 
-  db.ref('snufkin').on('value', snapshot => {
-
-    const data = snapshot.val();
-
-    if (!data) return;
-
-    if (data.bookings)
-      localStorage.setItem(
-        'snufkin_bookings',
-        JSON.stringify(data.bookings)
-      );
-
-    if (data.services)
-      localStorage.setItem(
-        'snufkin_services',
-        JSON.stringify(data.services)
-      );
-
-    if (data.gallery)
-      localStorage.setItem(
-        'snufkin_gallery',
-        JSON.stringify(data.gallery)
-      );
-
-    if (data.workinghours)
-      localStorage.setItem(
-        'snufkin_workinghours',
-        JSON.stringify(data.workinghours)
-      );
-
-    if (data.contact)
-      localStorage.setItem(
-        'snufkin_contact',
-        JSON.stringify(data.contact)
-      );
-
-    if (data.blockedhours)
-      localStorage.setItem(
-        'snufkin_blockedhours',
-        JSON.stringify(data.blockedhours)
-      );
-
-    renderBookings();
-    renderServices();
-    initDashboard();
-  });
-
-}
 </script>
 
 </body>
