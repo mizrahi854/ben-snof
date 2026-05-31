@@ -530,10 +530,9 @@ tr:hover td{background:var(--surface)}
         <select class="form-input" id="filterDate" style="max-width:200px" onchange="renderBookings()">
           <option value="">כל התאריכים</option>
         </select>
-        <button class="btn btn-danger btn-sm" onclick="clearOldBookings()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M8 6V4h8v2"/></svg>
-          מחק הזמנות ישנות
-        </button>
+<button class="btn btn-danger btn-sm" onclick="clearCancelledBookings()">
+  מחק הזמנות שבוטלו
+</button>
       </div>
       <div id="bookingsList"></div>
     </section>
@@ -623,8 +622,7 @@ tr:hover td{background:var(--surface)}
 
 
   <div id="adminGalleryPreviewGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;"></div>
-</div>
-  </section>
+</div> </section>
 
     <!-- CONTACT -->
     <section class="page-section" id="sec-contact">
@@ -940,10 +938,24 @@ function closeSidebar(){
   document.getElementById('sidebarOverlay').classList.remove('open');
 }
 
+
+function autoClearExpiredBookings() {
+
+  let bookings = getBookings();
+
+  bookings = bookings.filter(b => {
+    const bookingDate = new Date(`${b.date}T23:59:59`);
+    return bookingDate >= new Date();
+  });
+
+  LS.set('bookings', bookings);
+}
+
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
 function init() {
+
   // משיכת כל בסיס הנתונים מ-Firebase בטעינת פאנל הניהול
   db.ref('snufkin').on('value', snapshot => {
 
@@ -959,11 +971,15 @@ function init() {
 
     if (data.gallery) {
       LS.set('gallery', data.gallery);
-      // סנכרון גם ל-snufkin_gallery_data עבור תצוגת ניהול הגלריה
+
       const urlArr = Array.isArray(data.gallery)
         ? data.gallery.map(g => (typeof g === 'string' ? g : g.url))
         : [];
-      localStorage.setItem('snufkin_gallery_data', JSON.stringify(urlArr));
+
+      localStorage.setItem(
+        'snufkin_gallery_data',
+        JSON.stringify(urlArr)
+      );
     }
 
     if (data.workinghours)
@@ -974,6 +990,16 @@ function init() {
 
     if (data.blockedhours)
       LS.set('blockedhours', data.blockedhours);
+
+    // מחיקת הזמנות שתאריך שלהן עבר
+    let bookings = getBookings();
+
+    bookings = bookings.filter(b => {
+      const bookingDate = new Date(`${b.date}T23:59:59`);
+      return bookingDate >= new Date();
+    });
+
+    LS.set('bookings', bookings);
 
     renderBookings();
     renderServices();
@@ -986,7 +1012,7 @@ function init() {
 // DASHBOARD
 // ══════════════════════════════════════
 function initDashboard(){
-  const bookings = getBookings();
+const bookings = getBookings().filter(b => b.status !== 'cancelled');
   const today = todayKey();
   const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
   const weekKey = dateKey(weekAgo);
@@ -1534,6 +1560,41 @@ function handlePasswordChange(event) {
   initPasswordPage();
 }
 
+
+function autoClearExpiredBookings() {
+  const now = new Date();
+
+  const bookings = getBookings();
+
+  const activeBookings = bookings.filter(b => {
+
+    const bookingDate = new Date(`${b.date}T23:59:59`);
+
+    return bookingDate >= now;
+  });
+
+  if (activeBookings.length !== bookings.length) {
+    LS.set('bookings', activeBookings);
+  }
+}
+
+function clearCancelledBookings() {
+
+  if (!confirm('למחוק את כל ההזמנות שבוטלו?')) return;
+
+  const bookings = getBookings();
+
+  const activeBookings = bookings.filter(
+    b => b.status !== 'cancelled'
+  );
+
+  LS.set('bookings', activeBookings);
+
+  renderBookings();
+  initDashboard();
+
+  toast('כל ההזמנות שבוטלו נמחקו', 'success');
+}
 
 </script>
 
