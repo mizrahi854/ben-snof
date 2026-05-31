@@ -1508,39 +1508,87 @@ function populateSummary(){
 }
 
 // CONFIRM
-function confirmBooking(){
-  const firstName=document.getElementById('inFirstName').value.trim();
-  const lastName=document.getElementById('inLastName').value.trim();
-  const phone=document.getElementById('inPhone').value.trim();
-  if(!firstName||!lastName||!phone){toast('יש למלא שם וטלפון','error');return;}
-  if(!booking.service||!booking.date||!booking.time){toast('פרטי הזמנה חסרים','error');return;}
+function confirmBooking() {
 
-  const id='bk'+Date.now();
-  const customerName=`${firstName} ${lastName}`;
-  const contact=getContact();
-  const barberWa=normalizeWa(contact.whatsapp||'0500000000');
+const firstName = document.getElementById('inFirstName').value.trim();
+const lastName = document.getElementById('inLastName').value.trim();
+const phone = document.getElementById('inPhone').value.trim();
 
-  const b={
-    id,customerName,firstName,lastName,customerPhone:phone,
-    serviceName:booking.service.name,servicePrice:booking.service.price,
-    serviceDuration:booking.service.duration,
-    date:booking.date,time:booking.time,status:'active',
-    createdAt:new Date().toISOString()
-  };
-
-  // Save to LocalStorage
-  const all=getBookings();all.push(b);LS.set('bookings',all);
-
-  // WhatsApp message to barber
-  const msg=`הזמנה חדשה! ✂️\n\n👤 שם: ${customerName}\n📞 טלפון: ${phone}\n💇 שירות: ${booking.service.name}\n🗓 תאריך: ${fmtDate(booking.date)}\n🕒 שעה: ${booking.time}\n💰 מחיר: ₪${booking.service.price}\n⏱ משך: ${booking.service.duration} דקות\n\nנשלח מאתר סנופקין LUXE`;
-  window.open(`https://wa.me/${barberWa}?text=${encodeURIComponent(msg)}`,'_blank','noopener');
-
-  toast(`🎉 תורך ל${booking.service.name} בשעה ${booking.time} נקבע!`,'success');
-  document.getElementById('inFirstName').value='';
-  document.getElementById('inLastName').value='';
-  document.getElementById('inPhone').value='';
-  setTimeout(()=>{navigate('home');},1500);
+if (!firstName || !lastName || !phone) {
+toast('יש למלא שם פרטי, שם משפחה וטלפון', 'error');
+return;
 }
+
+if (!booking.service || !booking.date || !booking.time) {
+toast('פרטי ההזמנה חסרים', 'error');
+return;
+}
+
+const id = 'bk' + Date.now();
+
+const bookingData = {
+id,
+customerName: `${firstName} ${lastName}`,
+firstName,
+lastName,
+customerPhone: phone,
+serviceName: booking.service.name,
+servicePrice: booking.service.price,
+serviceDuration: booking.service.duration,
+date: booking.date,
+time: booking.time,
+status: 'active',
+createdAt: new Date().toISOString()
+};
+
+const allBookings = getBookings();
+allBookings.push(bookingData);
+
+// שמירה מקומית
+LS.set('bookings', allBookings);
+
+// שמירה ב-Firebase
+if (typeof db !== 'undefined') {
+db.ref('snufkin/bookings').set(allBookings)
+.then(() => {
+console.log('Booking saved to Firebase');
+})
+.catch((error) => {
+console.error('Firebase Error:', error);
+});
+}
+
+const contact = getContact();
+const barberWa = normalizeWa(contact.whatsapp || '0500000000');
+
+const msg =
+`הזמנה חדשה! ✂️
+
+👤 שם: ${firstName} ${lastName}
+📞 טלפון: ${phone}
+💇 שירות: ${booking.service.name}
+🗓 תאריך: ${fmtDate(booking.date)}
+🕒 שעה: ${booking.time}
+💰 מחיר: ₪${booking.service.price}
+⏱ משך: ${booking.service.duration} דקות`;
+
+window.open(
+`https://wa.me/${barberWa}?text=${encodeURIComponent(msg)}`,
+'_blank'
+);
+
+toast('🎉 התור נקבע בהצלחה!', 'success');
+
+document.getElementById('inFirstName').value = '';
+document.getElementById('inLastName').value = '';
+document.getElementById('inPhone').value = '';
+
+setTimeout(() => {
+navigate('home');
+loadMyBookings();
+}, 1500);
+}
+
 
 // ══════════════════════════════════════
 // SERVICE CARD → GO BOOKING
@@ -1736,9 +1784,7 @@ function filterMyBookings(){
   }).join('');
 
 }
-if(page==='home'){
-  loadMyBookings();
-}
+
 </script>
 </body>
 </html>
