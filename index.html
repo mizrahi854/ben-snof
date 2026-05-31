@@ -815,9 +815,21 @@ select.form-input option { background: var(--bg2); }
           <h2>התורים שלי</h2>
           <p>ניהול ההזמנות שלך</p>
         </div>
-        <div id="myBookingsContainer">
-          <p style="color:var(--mute);font-size:14px;text-align:center;padding:20px">אין הזמנות פעילות</p>
-        </div>
+<div class="booking-search-box" style="padding:10px 0; display:flex; flex-direction:column; gap:8px;">
+
+  <input id="searchFirstName" class="form-input" placeholder="שם פרטי" type="text"/>
+
+  <input id="searchLastName" class="form-input" placeholder="שם משפחה" type="text"/>
+
+  <input id="searchPhone" class="form-input" placeholder="טלפון שהוזן בהזמנה" type="tel"/>
+
+  <button class="btn btn-primary btn-block" onclick="filterMyBookings()">
+    מצא את התורים שלי
+  </button>
+
+</div>
+
+<div id="myBookingsContainer">
       </section>
 
       <!-- ABOUT -->
@@ -1675,6 +1687,57 @@ function handleBookingSubmit() {
   
   // ברגע שהכל תקין וההזמנה בוצעה:
   triggerLuxeToast("🎉 ההזמנה בוצעה בהצלחה ל-3 שניות!");
+}
+
+
+function filterMyBookings(){
+  const first = document.getElementById('searchFirstName').value.trim();
+  const last = document.getElementById('searchLastName').value.trim();
+  const phone = document.getElementById('searchPhone').value.trim();
+
+  if(!first || !last || !phone){
+    toast('צריך למלא שם פרטי, משפחה וטלפון');
+    return;
+  }
+
+  const all = getBookings();
+  const today = todayKey();
+
+  const filtered = all.filter(b =>
+    b.date >= today &&
+    b.status !== 'cancelled' &&
+    b.firstName === first &&
+    b.lastName === last &&
+    b.customerPhone === phone
+  );
+
+  const el = document.getElementById('myBookingsContainer');
+
+  if(!filtered.length){
+    el.innerHTML = '<p style="text-align:center;color:var(--mute);padding:20px">לא נמצאו תורים עם הפרטים האלה</p>';
+    return;
+  }
+
+  el.innerHTML = filtered.map(b => {
+    const cd = countdown(b.date, b.time);
+    return `
+      <div class="my-booking-card">
+        <div class="my-booking-head">
+          <div class="my-booking-service">${b.serviceName}</div>
+          <span class="badge-status badge-upcoming">פעיל</span>
+        </div>
+        <div class="my-booking-meta">
+          <span>📅 ${fmtDate(b.date)}</span>
+          <span>🕒 ${b.time}</span>
+        </div>
+        ${cd ? `<div class="countdown-badge">⏱ ${cd}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+}
+if(page==='home'){
+  loadMyBookings();
 }
 </script>
 </body>
