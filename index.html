@@ -1945,7 +1945,7 @@ function calPrev(){
   renderCalendar();
 }
 function calNext(){
-  const max=new Date();max.setMonth(max.getMonth()+3);
+  const max=new Date();max.setMonth(max.getMonth()+1);
   const cur=new Date(booking.calYear,booking.calMonth+1,1);
   if(cur>max)return;
   booking.calMonth++;
